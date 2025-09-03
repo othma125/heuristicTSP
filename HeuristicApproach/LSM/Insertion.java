@@ -6,7 +6,7 @@ import java.util.stream.IntStream;
 
 /**
  *
- * @author pc
+ * @author Othmane
  */
 public class Insertion extends LocalSearchMotion {
     

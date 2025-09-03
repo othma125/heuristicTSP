@@ -5,7 +5,7 @@ import HeuristicApproach.Motion;
 
 /**
  *
- * @author pc
+ * @author Othmane
  */
 public class _2opt extends LocalSearchMotion {
 
