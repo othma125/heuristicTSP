@@ -148,7 +148,7 @@ public final class GiantTour implements Comparable<GiantTour> {
         return false;
     }
 
-    public void LocalSearch(InputData data) {
+    private void LocalSearch(InputData data) {
         if (this.Sequence.length < 2)
             return;
         double cost = this.Cost;
