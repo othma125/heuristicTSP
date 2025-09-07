@@ -1,6 +1,4 @@
-
 import Data.InputData;
-import HeuristicApproach.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
@@ -14,6 +12,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import HeuristicApproach.*;
+
 
 
 
@@ -83,6 +83,8 @@ public class benchmark_main_class {
                 GiantTour sol = algorithm.getBestSolution();
 
                 // Print/display solution
+                long end_time = algorithm.getRunningTime();
+                System.out.println("EndTime (ms) = " + end_time);
                 sol.displaySolution();
                 // Lookup best known
                 String best = bestKnownMap.getOrDefault(stripExtension(d.FileName), "NA");
@@ -94,10 +96,9 @@ public class benchmark_main_class {
                     double gap = (sol.getCost() - value) / value;
                     gapStr = String.format(Locale.US, "%.2f", gap  * 100d);
                 }
-                long reachTime = algorithm.BestSolutionReachingTime - algorithm.StartTime;
-                total_run_time += reachTime;
+                total_run_time += end_time;
                 // Write result to CSV
-                writer.printf(Locale.US, "%s,%s,%s,%s,%s,%s\n", d.FileName, d.StopsCount, reachTime, sol.getCost(), best, gapStr);
+                writer.printf(Locale.US, "%s,%s,%s,%s,%s,%s\n", d.FileName, d.StopsCount, end_time, sol.getCost(), best, gapStr);
                 d.close();
             }
         } catch (IOException e) {
@@ -128,6 +129,6 @@ public class benchmark_main_class {
     // Helper: strip extension like .tsp or .txt
     private static String stripExtension(String filename) {
         int dot = filename.lastIndexOf('.');
-        return (dot == -1) ? filename : filename.substring(0, dot);
+        return dot == -1 ? filename : filename.substring(0, dot);
     }
 }

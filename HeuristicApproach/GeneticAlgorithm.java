@@ -26,6 +26,7 @@ public class GeneticAlgorithm extends MetaHeuristic {
     private final GiantTour[] Population;
     private final int PopulationSize;
     private final int TournamentSize = 5;
+    private long EndTime;
     private final Set<Future<GiantTour>> Futures;
     
     public GeneticAlgorithm(InputData data) {
@@ -57,6 +58,7 @@ public class GeneticAlgorithm extends MetaHeuristic {
             this.FuturesJoin();
         } while(this.nonStopCondition());
         this.Executor.shutdown();
+        this.EndTime = System.currentTimeMillis();
     }
     
     private void Selection() throws InterruptedException, ExecutionException {
@@ -148,5 +150,10 @@ public class GeneticAlgorithm extends MetaHeuristic {
         double probability = current_time - this.BestSolutionReachingTime;
         probability /= (double) (current_time - this.StartTime);
         return current_time - this.BestSolutionReachingTime < this.StopTime || Math.random() > probability;
+    }
+
+    @Override
+    public long getRunningTime() {
+        return this.EndTime - this.StartTime;
     }
 }

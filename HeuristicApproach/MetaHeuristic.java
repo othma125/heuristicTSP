@@ -50,5 +50,7 @@ public abstract class MetaHeuristic {
         }
     }
     
+    public abstract long getRunningTime();
+    
     public abstract void Run();
 }
