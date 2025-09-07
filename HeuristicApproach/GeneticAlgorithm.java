@@ -149,7 +149,7 @@ public class GeneticAlgorithm extends MetaHeuristic {
         long current_time = System.currentTimeMillis();
         double probability = current_time - this.BestSolutionReachingTime;
         probability /= (double) (current_time - this.StartTime);
-        return current_time - this.BestSolutionReachingTime < this.StopTime || Math.random() > probability;
+        return current_time - this.BestSolutionReachingTime < this.StagnationMinTime || Math.random() > probability;
     }
 
     @Override

@@ -23,12 +23,12 @@ public abstract class MetaHeuristic {
     public long BestSolutionReachingTime;
     private GiantTour BestSolution = null;
     final ReentrantLock Lock = new ReentrantLock();
-    final long StopTime;
+    final long StagnationMinTime;
     final ExecutorService Executor;
 
     public MetaHeuristic(InputData data){
         this.Data = data;
-        this.StopTime = (long) Math.max(200, 200 * Math.log(data.StopsCount));
+        this.StagnationMinTime = (long) Math.max(200, 200 * Math.log(data.StopsCount));
         int AvailableProcessorCors = ManagementFactory.getOperatingSystemMXBean().getAvailableProcessors();
         this.Executor = Executors.newFixedThreadPool(AvailableProcessorCors);
     }

@@ -19,6 +19,7 @@ public class heuristic_algorithm_main {
         try (InputData data = new InputData(file)) {  // ensures close()
             MetaHeuristic algorithm = new GeneticAlgorithm(data);
             algorithm.Run();
+            System.out.println("\nEnd Time = " + algorithm.getRunningTime() + " ms");
             GiantTour sol = algorithm.getBestSolution();
             sol.displaySolution();
         } catch (Exception ex) {
