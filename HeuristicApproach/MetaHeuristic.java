@@ -28,7 +28,7 @@ public abstract class MetaHeuristic {
 
     public MetaHeuristic(InputData data){
         this.Data = data;
-        this.StagnationMinTime = (long) Math.max(200, 200 * Math.log(data.StopsCount));
+        this.StagnationMinTime = (long) Math.max(100, 100 * Math.log(data.StopsCount));
         int AvailableProcessorCors = ManagementFactory.getOperatingSystemMXBean().getAvailableProcessors();
         this.Executor = Executors.newFixedThreadPool(AvailableProcessorCors);
     }
