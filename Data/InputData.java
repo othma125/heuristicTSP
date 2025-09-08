@@ -229,11 +229,10 @@ public class InputData implements CostMatrix, Comparable<InputData>, AutoCloseab
             format = "FULL_MATRIX";
 
         format = format.toUpperCase(Locale.ROOT);
-    if (this.useMatrix) {
+        if (this.useMatrix)
             allocateMatrix();
-        } else {
+        else
             this.CostSet = new ConcurrentHashMap<>();
-        }
         List<Double> nums = new ArrayList<>();
         String line;
         while ((line = br.readLine()) != null) {
@@ -413,23 +412,24 @@ public class InputData implements CostMatrix, Comparable<InputData>, AutoCloseab
         int y = p.getY();
         if (x < 0 || y < 0 || x >= this.StopsCount || y >= this.StopsCount)
             throw new IndexOutOfBoundsException("Invalid node index");
-        if (x == y) return 0d; // diagonal always zero
+        if (x == y)
+            return 0d; // diagonal always zero
         if (this.useMatrix) {
             double existing = this.CostMatrix[x][y];
-            if (this.explicitWeights) {
+            if (this.explicitWeights)
                 return existing; // explicit matrix fully populated
-            } else if (existing > 0d) {
+            else if (existing > 0d)
                 return existing; // already computed for coordinate-based
-            } else {
+            else
                 return this.computeAndStore(new Pair(x, y));
-            }
-        } else {
+        } 
+        else {
             Double cached = this.CostSet.getOrDefault(p, this.CostSet.get(p.Inverse()));
-            if (cached != null) return cached;
-            if (this.explicitWeights) {
+            if (cached != null)
+                return cached;
+            if (this.explicitWeights)
                 // Missing explicit edge should not happen (unless diagonal which we handled)
                 throw new IllegalStateException("Missing explicit distance for pair ("+x+","+y+")");
-            }
             return this.computeAndStore(new Pair(x, y));
         }
     }
