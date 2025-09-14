@@ -1,17 +1,8 @@
 import Data.InputData;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import HeuristicApproach.*;
 
 
@@ -80,7 +71,7 @@ public class benchmark_main_class {
             for (InputData d : datasets) {
                 MetaHeuristic algorithm = new GeneticAlgorithm(d);
                 algorithm.Run();
-                GiantTour sol = algorithm.getBestSolution();
+                Tour sol = algorithm.getBestSolution();
 
                 // Print/display solution
                 long end_time = algorithm.getRunningTime();

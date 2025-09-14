@@ -20,7 +20,7 @@ public class heuristic_algorithm_main {
             MetaHeuristic algorithm = new GeneticAlgorithm(data);
             algorithm.Run();
             System.out.println("\nEnd Time = " + algorithm.getRunningTime() + " ms");
-            GiantTour sol = algorithm.getBestSolution();
+            Tour sol = algorithm.getBestSolution();
             sol.displaySolution();
         } catch (Exception ex) {
             System.err.println("Failed on instance " + file_name + ": " + ex.getMessage());

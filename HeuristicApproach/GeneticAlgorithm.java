@@ -23,16 +23,16 @@ public class GeneticAlgorithm extends MetaHeuristic {
     
     private final double MutationRate = 0.1d;
     private final double CrossoverRate = 0.9d;
-    private final GiantTour[] Population;
+    private final Tour[] Population;
     private final int PopulationSize;
     private final int TournamentSize = 5;
     private long EndTime;
-    private final Set<Future<GiantTour>> Futures;
+    private final Set<Future<Tour>> Futures;
     
     public GeneticAlgorithm(InputData data) {
         super(data);
         this.PopulationSize = (int) Math.max(20, 10 * Math.log10(data.StopsCount));
-        this.Population = new GiantTour[this.PopulationSize];
+        this.Population = new Tour[this.PopulationSize];
         this.Futures = new HashSet<>(4 * this.PopulationSize, 1f);
     }
     
@@ -62,28 +62,28 @@ public class GeneticAlgorithm extends MetaHeuristic {
     }
     
     private void Selection() throws InterruptedException, ExecutionException {
-        GiantTour parent1 = this.tournamentSelection();
-        GiantTour parent2 = this.tournamentSelection();
+        Tour parent1 = this.tournamentSelection();
+        Tour parent2 = this.tournamentSelection();
         boolean CrossoverCondition = Math.random() < this.CrossoverRate;
         int CutPoint1 = (int) (this.Data.StopsCount * Math.random());
         int CutPoint2 = Math.random() < 0.7d ? CutPoint1 : CutPoint1 + (int)((this.Data.StopsCount - CutPoint1) * Math.random());
         if (CrossoverCondition && parent1 != parent2) {
-            Callable<GiantTour> task1 = () -> {
-                GiantTour Child = parent1.Crossover(this.Data , parent2, Math.random() < this.MutationRate, CutPoint1, CutPoint2);
+            Callable<Tour> task1 = () -> {
+                Tour Child = parent1.Crossover(this.Data , parent2, Math.random() < this.MutationRate, CutPoint1, CutPoint2);
                 this.UpdatePopulation(Child);
                 return Child;
             };
             this.Futures.add(this.Executor.submit(task1));
-            Callable<GiantTour> task2 = () -> {
-                GiantTour Child = parent2.Crossover(this.Data , parent1, Math.random() < this.MutationRate, CutPoint1, CutPoint2);
+            Callable<Tour> task2 = () -> {
+                Tour Child = parent2.Crossover(this.Data , parent1, Math.random() < this.MutationRate, CutPoint1, CutPoint2);
                 this.UpdatePopulation(Child);
                 return Child;
             };
             this.Futures.add(this.Executor.submit(task2));
         }
         else {
-            Callable<GiantTour> task = () -> {
-                GiantTour RandomSolution = Math.random() < 0.7d ? new GiantTour(this.Data) : new GiantTour(this.Data, this.getBestSolution());
+            Callable<Tour> task = () -> {
+                Tour RandomSolution = Math.random() < 0.3d ? new Tour(this.Data) : new Tour(this.Data, this.getBestSolution());
                 this.UpdatePopulation(RandomSolution);
                 return RandomSolution;
             };
@@ -91,7 +91,7 @@ public class GeneticAlgorithm extends MetaHeuristic {
         }
     }
     
-    private void UpdatePopulation(GiantTour newSolution) {
+    private void UpdatePopulation(Tour newSolution) {
         if (newSolution == null)
             return;
         this.Lock.lock();
@@ -110,15 +110,15 @@ public class GeneticAlgorithm extends MetaHeuristic {
     
     private void InitialPopulation() throws Exception {
         for (int i = 0; i < this.PopulationSize; i++) {
-            Callable<GiantTour> task = () -> {
-                GiantTour random_solution = new GiantTour(this.Data);
+            Callable<Tour> task = () -> {
+                Tour random_solution = new Tour(this.Data);
                 this.setBestSolution(random_solution);
                 return random_solution;
             };
             this.Futures.add(this.Executor.submit(task));
         }
         int i = -1;
-        for (Future<GiantTour> future: this.Futures)
+        for (Future<Tour> future: this.Futures)
             this.Population[++i] = future.get();
         this.Futures.clear();
         Arrays.sort(this.Population);
@@ -134,11 +134,11 @@ public class GeneticAlgorithm extends MetaHeuristic {
         this.Futures.clear();
     }
     
-    private GiantTour tournamentSelection() {
-        GiantTour bestInTournament = null;
+    private Tour tournamentSelection() {
+        Tour bestInTournament = null;
         for (int i = 0; i < this.TournamentSize; i++) {
             int randomIndex = (int) (Math.random() * this.PopulationSize);
-            GiantTour randomCompetitor = this.Population[randomIndex];
+            Tour randomCompetitor = this.Population[randomIndex];
             if (bestInTournament == null || randomCompetitor.compareTo(bestInTournament) < 0)
                 bestInTournament = randomCompetitor;
         }

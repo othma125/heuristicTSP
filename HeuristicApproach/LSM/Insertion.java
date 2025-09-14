@@ -8,7 +8,7 @@ import java.util.stream.IntStream;
  *
  * @author Othmane
  */
-public class Insertion extends LocalSearchMotion {
+public class Insertion extends LocalSearchMove {
     
     private final int Degree;
     private final boolean With2Opt;

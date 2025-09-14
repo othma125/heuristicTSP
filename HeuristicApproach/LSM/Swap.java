@@ -7,7 +7,7 @@ import HeuristicApproach.Motion;
  *
  * @author Othmane
  */
-public class Swap extends LocalSearchMotion {
+public class Swap extends LocalSearchMove {
 
     public Swap(int[] sequence, int i, int j) {
         super(sequence, i, j);

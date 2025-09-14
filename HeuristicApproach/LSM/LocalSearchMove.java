@@ -10,13 +10,13 @@ import Data.InputData;
  *
  * @author Othmane
  */
-public abstract class LocalSearchMotion {
+public abstract class LocalSearchMove {
     
     final int[] Sequence;
     double Gain = 0d;
     final int I, J;
 
-    public LocalSearchMotion(int[] sequence, int i, int j) {
+    public LocalSearchMove(int[] sequence, int i, int j) {
         this.Sequence = sequence;
         this.I = i;
         this.J = j;

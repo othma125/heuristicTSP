@@ -21,7 +21,7 @@ public abstract class MetaHeuristic {
     InputData Data;
     public long StartTime;// Start Time in milliseconds
     public long BestSolutionReachingTime;
-    private GiantTour BestSolution = null;
+    private Tour BestSolution = null;
     final ReentrantLock Lock = new ReentrantLock();
     final long StagnationMinTime;
     final ExecutorService Executor;
@@ -33,11 +33,11 @@ public abstract class MetaHeuristic {
         this.Executor = Executors.newFixedThreadPool(AvailableProcessorCors);
     }
 
-    public GiantTour getBestSolution() {
+    public Tour getBestSolution() {
         return this.BestSolution;
     }
 
-    void setBestSolution(GiantTour solution) {
+    void setBestSolution(Tour solution) {
         this.Lock.lock();
         try {
             if (this.BestSolution == null || solution.compareTo(this.BestSolution) < 0) {

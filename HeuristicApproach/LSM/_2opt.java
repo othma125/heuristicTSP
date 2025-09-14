@@ -2,12 +2,11 @@ package HeuristicApproach.LSM;
 
 import Data.InputData;
 import HeuristicApproach.Motion;
-
 /**
  *
  * @author Othmane
  */
-public class _2opt extends LocalSearchMotion {
+public class _2opt extends LocalSearchMove {
 
     public _2opt(int[] sequence, int i, int j) {
         super(sequence, i, j);

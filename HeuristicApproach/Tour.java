@@ -2,12 +2,7 @@ package HeuristicApproach;
 
 import Data.InputData;
 import HeuristicApproach.LSM.*;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.IntStream;
 
 /*
@@ -18,7 +13,7 @@ import java.util.stream.IntStream;
  *
  * @author Othmane
  */
-public final class GiantTour implements Comparable<GiantTour> {
+public final class Tour implements Comparable<Tour> {
 
     private int[] Sequence;
     private double Cost;
@@ -27,7 +22,7 @@ public final class GiantTour implements Comparable<GiantTour> {
         return this.Cost;
     }
 
-    public GiantTour(InputData data) {
+    public Tour(InputData data) {
         this.Sequence = IntStream.range(0, data.StopsCount).toArray();
         for (int i = 0; i < this.Sequence.length; i++)
             new Motion(i, (int) (Math.random() * this.Sequence.length)).Swap(this.Sequence);
@@ -35,7 +30,7 @@ public final class GiantTour implements Comparable<GiantTour> {
         this.LocalSearch(data);
     }
     
-    public GiantTour(InputData data, GiantTour gt) {
+    public Tour(InputData data, Tour gt) {
         int n = gt.getSequence().length; 
         if (n < 8)
             return;
@@ -57,7 +52,7 @@ public final class GiantTour implements Comparable<GiantTour> {
         this.LocalSearch(data);
     }
         
-    private GiantTour(InputData data, List<Integer> seq) {
+    private Tour(InputData data, List<Integer> seq) {
         this.Sequence = seq.stream().flatMapToInt(IntStream::of)
                                     .toArray();
         seq.clear();
@@ -80,7 +75,7 @@ public final class GiantTour implements Comparable<GiantTour> {
         }
     }
 
-    GiantTour Crossover(InputData data, GiantTour parent, boolean mutation, int ... cut_points) {
+    Tour Crossover(InputData data, Tour parent, boolean mutation, int ... cut_points) {
         int n = cut_points.length == 1 ? 0 : cut_points[0];
         int p = cut_points[cut_points.length == 1 ? 0 : 1];
         LinkedList<Integer> crossover_child = new LinkedList<>();
@@ -101,42 +96,42 @@ public final class GiantTour implements Comparable<GiantTour> {
             non_duplication_set.add(stop);
         }
         non_duplication_set.clear();
-        GiantTour.mutation(crossover_child, mutation);
-        return new GiantTour(data, crossover_child);
+        Tour.mutation(crossover_child, mutation);
+        return new Tour(data, crossover_child);
     }
     
     private boolean stagnation_breaker(InputData data) {
         for (int i = 0; i < this.Sequence.length - 1; i++) {
-            Set<LocalSearchMotion> lsm_set = new HashSet<>();
+            Set<LocalSearchMove> lsm_set = new HashSet<>();
             for (int j = i + 1; j < this.Sequence.length; j++) {    
                 if(j > i + 1) {
-                    LocalSearchMotion lsm = new Swap(this.Sequence, i, j);
+                    LocalSearchMove lsm = new Swap(this.Sequence, i, j);
                     if(lsm.getGain(data) < 0d)
                         lsm_set.add(lsm);
                 }
                 for (int n = j == i + 1 ? 1 : 0; n >= 2 && j + n < this.Sequence.length; n++) {
-                    LocalSearchMotion lsm1 = new Insertion(this.Sequence, i, j, n, true);
+                    LocalSearchMove lsm1 = new Insertion(this.Sequence, i, j, n, true);
                     if(lsm1.getGain(data) < 0d)
                         lsm_set.add(lsm1);
                     if(n == 0)
                         continue;
-                    LocalSearchMotion lsm2 = new Insertion(this.Sequence, i, j, n, false);
+                    LocalSearchMove lsm2 = new Insertion(this.Sequence, i, j, n, false);
                     if(lsm2.getGain(data) < 0d)
                         lsm_set.add(lsm2);
                 }
                 for (int n = j == i + 1 ? 1 : 0; n >= 2 && i - n >= 0; n++) {
-                    LocalSearchMotion lsm1 = new InverseInsertion(this.Sequence, i, j, n, true);
+                    LocalSearchMove lsm1 = new InverseInsertion(this.Sequence, i, j, n, true);
                     if(lsm1.getGain(data) < 0d)
                         lsm_set.add(lsm1);
                     if(n == 0)
                         continue;
-                    LocalSearchMotion lsm2 = new InverseInsertion(this.Sequence, i, j, n, false);
+                    LocalSearchMove lsm2 = new InverseInsertion(this.Sequence, i, j, n, false);
                     if(lsm2.getGain(data) < 0d)
                         lsm_set.add(lsm2);
                 }
             }
-            LocalSearchMotion best_lsm = lsm_set.stream()
-                                                .min(Comparator.comparingDouble(LocalSearchMotion::getGain))
+            LocalSearchMove best_lsm = lsm_set.stream()
+                                                .min(Comparator.comparingDouble(LocalSearchMove::getGain))
                                                 .orElse(null);            
             lsm_set.clear();
             if (best_lsm == null)
@@ -156,7 +151,7 @@ public final class GiantTour implements Comparable<GiantTour> {
         for (int i = 0; i < this.Sequence.length - 1; i++)
             for (int j = i + 1; j < this.Sequence.length ; j++) {
 //            for (int l = this.Sequence.length - 1; l > k ; l--) {
-                LocalSearchMotion lsm = new _2opt(this.Sequence, i , j);
+                LocalSearchMove lsm = new _2opt(this.Sequence, i , j);
                 double gain = lsm.getGain(data);
                 if (gain < 0d) {
                     lsm.Perform(this.Sequence);
@@ -175,7 +170,7 @@ public final class GiantTour implements Comparable<GiantTour> {
     }
     
     @Override
-    public int compareTo(GiantTour gt) {
+    public int compareTo(Tour gt) {
         double diff = this.Cost - gt.getCost();
         return (int) (diff * 100d);
     }
