@@ -25,7 +25,7 @@ public final class Tour implements Comparable<Tour> {
     public Tour(InputData data) {
         this.Sequence = IntStream.range(0, data.StopsCount).toArray();
         for (int i = 0; i < this.Sequence.length; i++)
-            new Motion(i, (int) (Math.random() * this.Sequence.length)).Swap(this.Sequence);
+            new Move(i, (int) (Math.random() * this.Sequence.length)).Swap(this.Sequence);
         this.setCost(data);
         this.LocalSearch(data);
     }
@@ -71,7 +71,7 @@ public final class Tour implements Comparable<Tour> {
     public static void mutation(List<Integer> sequence_list, boolean mutation) {
         if (mutation) {
             int i = (int) (Math.random() * sequence_list.size()), j = (int) (Math.random() * sequence_list.size());
-            new Motion(Math.min(i, j), Math.max(i, j))._2opt(sequence_list);
+            new Move(Math.min(i, j), Math.max(i, j))._2opt(sequence_list);
         }
     }
 
@@ -160,9 +160,9 @@ public final class Tour implements Comparable<Tour> {
             }
         if (this.compareTo(cost) < 0) {
             int max = (int) (Math.random() * Math.sqrt(data.StopsCount));
-            Motion motion = new Motion(0, this.Sequence.length - 1);
+            Move move = new Move(0, this.Sequence.length - 1);
             for (int i = 0; i < max; i++)
-                motion.Insertion(this.Sequence);
+                move.Insertion(this.Sequence);
             this.LocalSearch(data);
         }
         else if (Math.random() < probability && this.stagnation_breaker(data))

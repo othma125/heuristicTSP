@@ -1,7 +1,7 @@
 package HeuristicApproach.LSM;
 
 import Data.InputData;
-import HeuristicApproach.Motion;
+import HeuristicApproach.Move;
 
 /**
  *
@@ -17,7 +17,7 @@ public class Swap extends LocalSearchMove {
     public void Perform(int[] sequence) {
         if (this.I == this.J)
             return;
-        new Motion(this.I, this.J).Swap(sequence);
+        new Move(this.I, this.J).Swap(sequence);
     }
 
     @Override

@@ -1,7 +1,7 @@
 package HeuristicApproach.LSM;
 
 import Data.InputData;
-import HeuristicApproach.Motion;
+import HeuristicApproach.Move;
 import java.util.stream.IntStream;
 
 /**
@@ -21,7 +21,7 @@ public class Insertion extends LocalSearchMove {
 
     @Override
     public void Perform(int[] sequence) {
-        IntStream.range(0, this.Degree + 1).mapToObj(i -> new Motion(this.With2Opt ? this.I : this.I + i, this.J + i))
+        IntStream.range(0, this.Degree + 1).mapToObj(i -> new Move(this.With2Opt ? this.I : this.I + i, this.J + i))
                                             .forEach(motion -> motion.Insertion(sequence));
     }
 

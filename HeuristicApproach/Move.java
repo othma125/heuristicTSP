@@ -12,19 +12,19 @@ import java.util.List;
  *
  * @author Othmane
  */
-public class Motion {
+public class Move {
     private int Index1, Index2;
     
 //    void display(){
 //        System.out.println("( " + this.Index1 + " , " + this.Index2 + " )");
 //    }
     
-    public Motion(int a, int b) {
+    public Move(int a, int b) {
         this.Index1 = a;
         this.Index2 = b;
     }
     
-//    boolean EqualsTo(Motion m) {
+//    boolean EqualsTo(Move m) {
 //        return (this.Index1 == m.Index2 && this.Index2 == m.Index1) || (this.Index1 == m.Index1 && this.Index2 == m.Index2);
 //    }
 
@@ -70,14 +70,14 @@ public class Motion {
     <T> void _2opt(List<T> list){
         if (this.Index1 < this.Index2) {
             for (int k = this.Index1, l = this.Index2; k < l; k++, l--)
-                new Motion(k, l).Swap(list);
+                new Move(k, l).Swap(list);
         }
     }
 
     public void _2opt(int[] array) {
         if (this.Index1 < this.Index2) {
             for (int k = this.Index1, l = this.Index2; k < l; k++, l--)
-                new Motion(k, l).Swap(array);
+                new Move(k, l).Swap(array);
         }
     }
 }

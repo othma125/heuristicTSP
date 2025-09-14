@@ -1,7 +1,7 @@
 package HeuristicApproach.LSM;
 
 import Data.InputData;
-import HeuristicApproach.Motion;
+import HeuristicApproach.Move;
 /**
  *
  * @author Othmane
@@ -16,7 +16,7 @@ public class _2opt extends LocalSearchMove {
     public void Perform(int[] sequence) {
         if (this.I == this.J)
             return;
-        new Motion(this.I, this.J)._2opt(sequence);
+        new Move(this.I, this.J)._2opt(sequence);
     }
 
     @Override
