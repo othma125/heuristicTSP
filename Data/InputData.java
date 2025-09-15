@@ -1,14 +1,7 @@
 package Data;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,7 +20,7 @@ public class InputData implements CostMatrix, Comparable<InputData>, AutoCloseab
 
     public int StopsCount = 0;
     // Thread-safe distance cache: multiple threads may call getCost concurrently
-    private ConcurrentMap<Pair, Double> CostSet = null;          // explicit or lazily cached distances
+    private ConcurrentMap<Edge, Double> CostSet = null;          // explicit or lazily cached distances
     // Dense matrix strategy for small instances
     private double[][] CostMatrix = null;                        // used when useMatrix == true
     private boolean useMatrix = false;                           // decided dynamically per instance
@@ -326,14 +319,14 @@ public class InputData implements CostMatrix, Comparable<InputData>, AutoCloseab
                 case "FULL_MATRIX":
                     for (int i = 0; i < this.StopsCount; i++)
                         for (int j = 0; j < this.StopsCount; j++)
-                            this.CostSet.put(new Pair(i, j), nums.get(idx++));
+                            this.CostSet.put(new Edge(i, j), nums.get(idx++));
                     break;
                 case "UPPER_ROW": // strictly upper triangle (no diag)
                     for (int i = 0; i < this.StopsCount; i++)
                         for (int j = i + 1; j < this.StopsCount; j++) {
                             double w = nums.get(idx++);
-                            this.CostSet.put(new Pair(i, j), w);
-                            this.CostSet.put(new Pair(j, i), w);
+                            this.CostSet.put(new Edge(i, j), w);
+                            this.CostSet.put(new Edge(j, i), w);
                         }
 //                    this.fillMissingDiagonalZero();
                     break;
@@ -341,8 +334,8 @@ public class InputData implements CostMatrix, Comparable<InputData>, AutoCloseab
                     for (int i = 0; i < this.StopsCount; i++)
                         for (int j = 0; j < i; j++) {
                             double w = nums.get(idx++);
-                            this.CostSet.put(new Pair(i, j), w);
-                            this.CostSet.put(new Pair(j, i), w);
+                            this.CostSet.put(new Edge(i, j), w);
+                            this.CostSet.put(new Edge(j, i), w);
                         }
 //                    this.fillMissingDiagonalZero();
                     break;
@@ -350,16 +343,16 @@ public class InputData implements CostMatrix, Comparable<InputData>, AutoCloseab
                     for (int i = 0; i < this.StopsCount; i++)
                         for (int j = i; j < this.StopsCount; j++) {
                             double w = nums.get(idx++);
-                            CostSet.put(new Pair(i, j), w);
-                            CostSet.put(new Pair(j, i), w);
+                            CostSet.put(new Edge(i, j), w);
+                            CostSet.put(new Edge(j, i), w);
                         }
                     break;
                 case "LOWER_DIAG_ROW":
                     for (int i = 0; i < this.StopsCount; i++)
                         for (int j = 0; j <= i; j++) {
                             double w = nums.get(idx++);
-                            this.CostSet.put(new Pair(i, j), w);
-                            this.CostSet.put(new Pair(j, i), w);
+                            this.CostSet.put(new Edge(i, j), w);
+                            this.CostSet.put(new Edge(j, i), w);
                         }
                     break;
                 default:
@@ -367,7 +360,7 @@ public class InputData implements CostMatrix, Comparable<InputData>, AutoCloseab
             }
             // Ensure diagonal zeros exist for map-based explicit storage
             for (int i = 0; i < this.StopsCount; i++) {
-                this.CostSet.putIfAbsent(new Pair(i, i), 0d);
+                this.CostSet.putIfAbsent(new Edge(i, i), 0d);
             }
         }
     }
@@ -383,7 +376,7 @@ public class InputData implements CostMatrix, Comparable<InputData>, AutoCloseab
 
 //    private void fillMissingDiagonalZero() {
 //        for (int i = 0; i < this.StopsCount; i++)
-//            this.CostSet.putIfAbsent(new Pair(i), 0d);
+//            this.CostSet.putIfAbsent(new Edge(i), 0d);
 //    }
 
     private static Double parseDoubleSafe(String s) {
@@ -404,12 +397,12 @@ public class InputData implements CostMatrix, Comparable<InputData>, AutoCloseab
     }
 
     @Override
-    public double getCost(Pair p) {
+    public double getCost(Edge edge) {
         this.ensureOpen();
-        if (p.isFake())
+        if (edge.isFake())
             return 0d;
-        int x = p.getX();
-        int y = p.getY();
+        int x = edge.getX();
+        int y = edge.getY();
         if (x < 0 || y < 0 || x >= this.StopsCount || y >= this.StopsCount)
             throw new IndexOutOfBoundsException("Invalid node index");
         if (x == y)
@@ -421,22 +414,22 @@ public class InputData implements CostMatrix, Comparable<InputData>, AutoCloseab
             else if (existing > 0d)
                 return existing; // already computed for coordinate-based
             else
-                return this.computeAndStore(new Pair(x, y));
+                return this.computeAndStore(new Edge(x, y));
         } 
         else {
-            Double cached = this.CostSet.getOrDefault(p, this.CostSet.get(p.Inverse()));
+            Double cached = this.CostSet.getOrDefault(edge, this.CostSet.get(edge.Inverse()));
             if (cached != null)
                 return cached;
             if (this.explicitWeights)
                 // Missing explicit edge should not happen (unless diagonal which we handled)
-                throw new IllegalStateException("Missing explicit distance for pair ("+x+","+y+")");
-            return this.computeAndStore(new Pair(x, y));
+                throw new IllegalStateException("Missing explicit distance for Edge ("+ edge.toString() + ")");
+            return this.computeAndStore(new Edge(x, y));
         }
     }
 
-    private double computeAndStore(Pair p) {
-        int x = p.getX();
-        int y = p.getY();
+    private double computeAndStore(Edge edge) {
+        int x = edge.getX();
+        int y = edge.getY();
         // If coordinates present, compute lazily
 
         Location location1 = this.Coordinates.get(x);
@@ -466,7 +459,7 @@ public class InputData implements CostMatrix, Comparable<InputData>, AutoCloseab
             this.CostMatrix[y][x] = cost;
         }
         else
-            this.CostSet.put(p, cost);
+            this.CostSet.put(edge, cost);
         return cost;
     }
 

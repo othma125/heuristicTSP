@@ -13,9 +13,9 @@ package Data;
  */
 public interface CostMatrix {
     
-    public abstract double getCost(Pair pair);
+    public abstract double getCost(Edge edge);
     
     public default double getCost(int i, int j) {
-        return this.getCost(new Pair(i, j));
+        return this.getCost(new Edge(i, j));
     }
 }

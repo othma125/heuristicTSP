@@ -99,8 +99,35 @@ public final class Tour implements Comparable<Tour> {
         Tour.mutation(crossover_child, mutation);
         return new Tour(data, crossover_child);
     }
+
+    private void LocalSearch(InputData data) {
+        if (this.Sequence.length < 2)
+            return;
+        double cost = this.Cost;
+        double probability = Math.sqrt(data.StopsCount) / (double) data.StopsCount;
+        for (int i = 0; i < this.Sequence.length - 1; i++)
+            for (int j = i + 1; j < this.Sequence.length ; j++) {
+//            for (int l = this.Sequence.length - 1; l > k ; l--) {
+                LocalSearchMove lsm = new _2opt(this.Sequence, i , j);
+                double gain = lsm.getGain(data);
+                if (gain < 0d) {
+                    lsm.Perform(this.Sequence);
+                    this.Cost += gain;
+                }
+            }
+        if (this.compareTo(cost) < 0) {
+            int max = (int) (Math.random() * Math.sqrt(data.StopsCount));
+            Move move = new Move(0, this.Sequence.length - 1);
+            for (int i = 0; i < max; i++)
+                move.Insertion(this.Sequence);
+            this.LocalSearch(data);
+        }
+        else if (Math.random() < probability && this.stagnation_breaker(data, probability))
+            this.LocalSearch(data);
+    }
     
-    private boolean stagnation_breaker(InputData data) {
+    private boolean stagnation_breaker(InputData data, double probability) {
+        boolean improved = false;
         for (int i = 0; i < this.Sequence.length - 1; i++) {
             Set<LocalSearchMove> lsm_set = new HashSet<>();
             for (int j = i + 1; j < this.Sequence.length; j++) {    
@@ -136,37 +163,13 @@ public final class Tour implements Comparable<Tour> {
             lsm_set.clear();
             if (best_lsm == null)
                 continue;
+            improved = true;
             best_lsm.Perform(this.Sequence);
             this.Cost += best_lsm.getGain();
-            return true;
+            if (Math.random() >= probability)
+                return improved;
         }
-        return false;
-    }
-
-    private void LocalSearch(InputData data) {
-        if (this.Sequence.length < 2)
-            return;
-        double cost = this.Cost;
-        double probability = Math.sqrt(data.StopsCount) / (double) data.StopsCount;
-        for (int i = 0; i < this.Sequence.length - 1; i++)
-            for (int j = i + 1; j < this.Sequence.length ; j++) {
-//            for (int l = this.Sequence.length - 1; l > k ; l--) {
-                LocalSearchMove lsm = new _2opt(this.Sequence, i , j);
-                double gain = lsm.getGain(data);
-                if (gain < 0d) {
-                    lsm.Perform(this.Sequence);
-                    this.Cost += gain;
-                }
-            }
-        if (this.compareTo(cost) < 0) {
-            int max = (int) (Math.random() * Math.sqrt(data.StopsCount));
-            Move move = new Move(0, this.Sequence.length - 1);
-            for (int i = 0; i < max; i++)
-                move.Insertion(this.Sequence);
-            this.LocalSearch(data);
-        }
-        else if (Math.random() < probability && this.stagnation_breaker(data))
-            this.LocalSearch(data);
+        return improved;
     }
     
     @Override

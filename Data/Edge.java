@@ -10,11 +10,11 @@ package Data;
  *
  * @author Othmane
  */
-public class Pair implements Cloneable {
+public class Edge implements Cloneable {
     
     private int X, Y;
 
-    public Pair(int x, int y){
+    public Edge(int x, int y){
         this.X = x;
         this.Y = y;
     }
@@ -24,21 +24,21 @@ public class Pair implements Cloneable {
         return 31 * this.X + this.Y;
     }
 
-    public Pair(int x){
+    public Edge(int x){
         this(x, x);
     }
 
-    Pair(Pair pair){
-        this(pair.X, pair.Y);
+    Edge(Edge edge){
+        this(edge.X, edge.Y);
     }
-    
-    public Pair Inverse() {
-        return new Pair(this.Y, this.X);
+
+    public Edge Inverse() {
+        return new Edge(this.Y, this.X);
     }
 
     @Override
-    public Pair clone(){
-        return new Pair(this);
+    public Edge clone(){
+        return new Edge(this);
     }
 
     @Override
@@ -58,8 +58,8 @@ public class Pair implements Cloneable {
         return this.X == this.Y;
     }
 
-    boolean isEqualsTo(Pair p){
-        return this.X == p.X && this.Y == p.Y;
+    boolean isEqualsTo(Edge edge){
+        return this.X == edge.X && this.Y == edge.Y;
     }
 
     @Override
@@ -68,6 +68,6 @@ public class Pair implements Cloneable {
             return true;
         if(other == null || this.getClass() != other.getClass())
             return false;
-        return this.isEqualsTo((Pair)other);
+        return this.isEqualsTo((Edge) other);
     }
 }
