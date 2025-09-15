@@ -136,7 +136,7 @@ public final class Tour implements Comparable<Tour> {
                     if(lsm.getGain(data) < 0d)
                         lsm_set.add(lsm);
                 }
-                for (int n = j == i + 1 ? 1 : 0; n >= 2 && j + n < this.Sequence.length; n++) {
+                for (int n = j == i + 1 ? 1 : 0; n <= 2 && j + n < this.Sequence.length; n++) {
                     LocalSearchMove lsm1 = new Insertion(this.Sequence, i, j, n, true);
                     if(lsm1.getGain(data) < 0d)
                         lsm_set.add(lsm1);
@@ -146,7 +146,7 @@ public final class Tour implements Comparable<Tour> {
                     if(lsm2.getGain(data) < 0d)
                         lsm_set.add(lsm2);
                 }
-                for (int n = j == i + 1 ? 1 : 0; n >= 2 && i - n >= 0; n++) {
+                for (int n = j == i + 1 ? 1 : 0; n <= 2 && i - n >= 0; n++) {
                     LocalSearchMove lsm1 = new InverseInsertion(this.Sequence, i, j, n, true);
                     if(lsm1.getGain(data) < 0d)
                         lsm_set.add(lsm1);
