@@ -122,12 +122,11 @@ public final class Tour implements Comparable<Tour> {
                 move.Insertion(this.Sequence);
             this.LocalSearch(data);
         }
-        else if (Math.random() < probability && this.stagnation_breaker(data, probability))
+        else if (Math.random() < probability && this.stagnation_breaker(data))
             this.LocalSearch(data);
     }
     
-    private boolean stagnation_breaker(InputData data, double probability) {
-        boolean improved = false;
+    private boolean stagnation_breaker(InputData data) {
         for (int i = 0; i < this.Sequence.length - 1; i++) {
             Set<LocalSearchMove> lsm_set = new HashSet<>();
             for (int j = i + 1; j < this.Sequence.length; j++) {    
@@ -163,13 +162,11 @@ public final class Tour implements Comparable<Tour> {
             lsm_set.clear();
             if (best_lsm == null)
                 continue;
-            improved = true;
             best_lsm.Perform(this.Sequence);
             this.Cost += best_lsm.getGain();
-            if (Math.random() >= probability)
-                return improved;
+            return true;
         }
-        return improved;
+        return false;
     }
     
     @Override
