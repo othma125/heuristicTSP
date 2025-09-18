@@ -128,38 +128,34 @@ public final class Tour implements Comparable<Tour> {
     
     private boolean stagnation_breaker(InputData data) {
         for (int i = 0; i < this.Sequence.length - 1; i++) {
-            Set<LocalSearchMove> lsm_set = new HashSet<>();
+            LocalSearchMove best_lsm = null;
             for (int j = i + 1; j < this.Sequence.length; j++) {    
                 if(j > i + 1) {
                     LocalSearchMove lsm = new Swap(this.Sequence, i, j);
-                    if(lsm.getGain(data) < 0d)
-                        lsm_set.add(lsm);
+                    if(lsm.getGain(data) < 0d && (best_lsm == null || lsm.getGain() < best_lsm.getGain()))
+                        best_lsm = lsm;
                 }
                 for (int n = j == i + 1 ? 1 : 0; n <= 2 && j + n < this.Sequence.length; n++) {
                     LocalSearchMove lsm1 = new Insertion(this.Sequence, i, j, n, true);
-                    if(lsm1.getGain(data) < 0d)
-                        lsm_set.add(lsm1);
+                    if(lsm1.getGain(data) < 0d && (best_lsm == null || lsm1.getGain() < best_lsm.getGain()))
+                        best_lsm = lsm1;
                     if(n == 0)
                         continue;
                     LocalSearchMove lsm2 = new Insertion(this.Sequence, i, j, n, false);
-                    if(lsm2.getGain(data) < 0d)
-                        lsm_set.add(lsm2);
+                    if(lsm2.getGain(data) < 0d && (best_lsm == null || lsm2.getGain() < best_lsm.getGain()))
+                        best_lsm = lsm2;
                 }
                 for (int n = j == i + 1 ? 1 : 0; n <= 2 && i - n >= 0; n++) {
                     LocalSearchMove lsm1 = new InverseInsertion(this.Sequence, i, j, n, true);
-                    if(lsm1.getGain(data) < 0d)
-                        lsm_set.add(lsm1);
+                    if(lsm1.getGain(data) < 0d && (best_lsm == null || lsm1.getGain() < best_lsm.getGain()))
+                        best_lsm = lsm1;
                     if(n == 0)
                         continue;
                     LocalSearchMove lsm2 = new InverseInsertion(this.Sequence, i, j, n, false);
-                    if(lsm2.getGain(data) < 0d)
-                        lsm_set.add(lsm2);
+                    if(lsm2.getGain(data) < 0d && (best_lsm == null || lsm2.getGain() < best_lsm.getGain()))
+                        best_lsm = lsm2;
                 }
-            }
-            LocalSearchMove best_lsm = lsm_set.stream()
-                                                .min(Comparator.comparingDouble(LocalSearchMove::getGain))
-                                                .orElse(null);            
-            lsm_set.clear();
+            }          
             if (best_lsm == null)
                 continue;
             best_lsm.Perform(this.Sequence);
