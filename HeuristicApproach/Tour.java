@@ -119,7 +119,7 @@ public final class Tour implements Comparable<Tour> {
             int max = (int) (Math.random() * Math.sqrt(data.StopsCount));
             Move move = new Move(0, this.Sequence.length - 1);
             for (int i = 0; i < max; i++)
-                move.Insertion(this.Sequence);
+                move.RightShift(this.Sequence);
             this.LocalSearch(data);
         }
         else if (Math.random() < probability && this.stagnation_breaker(data))
@@ -136,22 +136,22 @@ public final class Tour implements Comparable<Tour> {
                         best_lsm = lsm;
                 }
                 for (int n = j == i + 1 ? 1 : 0; n <= 2 && j + n < this.Sequence.length; n++) {
-                    LocalSearchMove lsm1 = new Insertion(this.Sequence, i, j, n, true);
+                    LocalSearchMove lsm1 = new RightShift(this.Sequence, i, j, n, true);
                     if(lsm1.getGain(data) < 0d && (best_lsm == null || lsm1.getGain() < best_lsm.getGain()))
                         best_lsm = lsm1;
                     if(n == 0)
                         continue;
-                    LocalSearchMove lsm2 = new Insertion(this.Sequence, i, j, n, false);
+                    LocalSearchMove lsm2 = new RightShift(this.Sequence, i, j, n, false);
                     if(lsm2.getGain(data) < 0d && (best_lsm == null || lsm2.getGain() < best_lsm.getGain()))
                         best_lsm = lsm2;
                 }
                 for (int n = j == i + 1 ? 1 : 0; n <= 2 && i - n >= 0; n++) {
-                    LocalSearchMove lsm1 = new InverseInsertion(this.Sequence, i, j, n, true);
+                    LocalSearchMove lsm1 = new LeftShift(this.Sequence, i, j, n, true);
                     if(lsm1.getGain(data) < 0d && (best_lsm == null || lsm1.getGain() < best_lsm.getGain()))
                         best_lsm = lsm1;
                     if(n == 0)
                         continue;
-                    LocalSearchMove lsm2 = new InverseInsertion(this.Sequence, i, j, n, false);
+                    LocalSearchMove lsm2 = new LeftShift(this.Sequence, i, j, n, false);
                     if(lsm2.getGain(data) < 0d && (best_lsm == null || lsm2.getGain() < best_lsm.getGain()))
                         best_lsm = lsm2;
                 }

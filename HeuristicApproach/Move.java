@@ -28,32 +28,23 @@ public class Move {
 //        return (this.Index1 == m.Index2 && this.Index2 == m.Index1) || (this.Index1 == m.Index1 && this.Index2 == m.Index2);
 //    }
 
-    public void Insertion(int[] sequence) {
+    public void LeftShift(int[] sequence) {
         if (this.Index1 < this.Index2) {
             int aux = sequence[this.Index2];
-            for (int k = this.Index2; k > this.Index1; k--)
-                sequence[k] = sequence[k - 1];
+            for (int k = this.Index2; k > this.Index1;)
+                sequence[k] = sequence[--k];
             sequence[this.Index1] = aux;
         }
     }
     
-    public void InverseInsertion(int[] array){
+    public void RightShift(int[] array){
         if(this.Index1 < this.Index2){
             int aux = array[this.Index1];
-            for(int k = this.Index1; k < this.Index2; k++)
-                array[k] = array[k+1];
+            for(int k = this.Index1; k < this.Index2;)
+                array[k] = array[++k];
             array[this.Index2] = aux;
         }
     }
-
-//    <T> void Insertion(List<Integer> sequence) {
-//        if (this.Index1 < this.Index2) {
-//            int aux = sequence.get(this.Index2);
-//            for (int k = this.Index2; k > this.Index1; k--)
-//                sequence.set(k, sequence.get(k - 1));
-//            sequence.set(this.Index1, aux);
-//        }
-//    }
     
     public void Swap(int[] array){
        int aux = array[this.Index1];

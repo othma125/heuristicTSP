@@ -2,6 +2,7 @@ package HeuristicApproach.LSM;
 
 import Data.InputData;
 import HeuristicApproach.Move;
+
 /**
  *
  * @author Othmane

@@ -8,12 +8,12 @@ import java.util.stream.IntStream;
  *
  * @author Othmane
  */
-public class InverseInsertion extends LocalSearchMove{
+public class LeftShift extends LocalSearchMove {
     
     private final int Degree;
     private final boolean With2Opt;
 
-    public InverseInsertion(int[] sequence, int i, int j, int degree, boolean _2opt) {
+    public LeftShift(int[] sequence, int i, int j, int degree, boolean _2opt) {
         super(sequence, i, j);
         this.Degree = degree;
         this.With2Opt = _2opt;
@@ -22,7 +22,7 @@ public class InverseInsertion extends LocalSearchMove{
     @Override
     public void Perform(int[] sequence) {
         IntStream.range(0, this.Degree + 1).mapToObj(i -> new Move(this.I - i, this.With2Opt ? this.J : this.J - i))
-                                            .forEach(motion -> motion.InverseInsertion(sequence));
+                                            .forEach(motion -> motion.RightShift(sequence));
     }
 
     @Override
