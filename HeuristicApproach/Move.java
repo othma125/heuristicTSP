@@ -28,7 +28,7 @@ public class Move {
 //        return (this.Index1 == m.Index2 && this.Index2 == m.Index1) || (this.Index1 == m.Index1 && this.Index2 == m.Index2);
 //    }
 
-    public void LeftShift(int[] sequence) {
+    public void RightShift(int[] sequence) {
         if (this.Index1 < this.Index2) {
             int aux = sequence[this.Index2];
             for (int k = this.Index2; k > this.Index1;)
@@ -37,7 +37,7 @@ public class Move {
         }
     }
     
-    public void RightShift(int[] array){
+    public void LeftShift(int[] array){
         if(this.Index1 < this.Index2){
             int aux = array[this.Index1];
             for(int k = this.Index1; k < this.Index2;)
