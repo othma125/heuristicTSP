@@ -30,6 +30,10 @@ public final class Tour implements Comparable<Tour> {
         this.LocalSearch(data);
     }
     
+    public Tour() {
+        this.Cost = Double.POSITIVE_INFINITY;
+    }
+    
     public Tour(InputData data, Tour gt) {
         int n = gt.getSequence().length; 
         if (n < 8)
@@ -53,11 +57,17 @@ public final class Tour implements Comparable<Tour> {
     }
         
     private Tour(InputData data, List<Integer> seq) {
-        this.Sequence = seq.stream().flatMapToInt(IntStream::of)
-                                    .toArray();
-        seq.clear();
+        this(data, seq.stream().flatMapToInt(IntStream::of).toArray());
+    }
+    
+    public Tour(InputData data, int[] seq) {
+        this.Sequence = seq;
         this.setCost(data);
-        this.LocalSearch(data);
+    }
+    
+    public Tour(int[] seq, double cost) {
+        this.Sequence = seq;
+        this.Cost = cost;
     }
 
     private void setCost(InputData data) {
@@ -85,6 +95,20 @@ public final class Tour implements Comparable<Tour> {
             crossover_child.add(stop);
             non_duplication_set.add(stop);
         }
+//        int i = 0;
+//        for (int j = p; non_duplication_set.size() < this.Sequence.length; j++) {
+//            int stop = this.Sequence[j % this.Sequence.length];
+//            if (non_duplication_set.contains(stop))
+//                continue;
+//            if (crossover_child.size() < this.Sequence.length - n) {
+//                crossover_child.add(stop);
+//                non_duplication_set.add(stop);
+//            }
+//            else {
+//                crossover_child.add(i++, stop);
+//                non_duplication_set.add(stop);
+//            }
+//        }
         int k = 0;
         while (this.Sequence[k] != parent.Sequence[p])
             k++;
@@ -99,37 +123,11 @@ public final class Tour implements Comparable<Tour> {
         Tour.mutation(crossover_child, mutation);
         return new Tour(data, crossover_child);
     }
-
-    private void LocalSearch(InputData data) {
-        if (this.Sequence.length < 2)
-            return;
-        double cost = this.Cost;
-        double probability = Math.sqrt(data.StopsCount) / (double) data.StopsCount;
-        for (int i = 0; i < this.Sequence.length - 1; i++)
-            for (int j = i + 1; j < this.Sequence.length ; j++) {
-//            for (int l = this.Sequence.length - 1; l > k ; l--) {
-                LocalSearchMove lsm = new _2opt(this.Sequence, i , j);
-                double gain = lsm.getGain(data);
-                if (gain < 0d) {
-                    lsm.Perform(this.Sequence);
-                    this.Cost += gain;
-                }
-            }
-        if (this.compareTo(cost) < 0) {
-            int max = (int) (Math.random() * Math.sqrt(data.StopsCount));
-            Move move = new Move(0, this.Sequence.length - 1);
-            for (int i = 0; i < max; i++)
-                move.RightShift(this.Sequence);
-            this.LocalSearch(data);
-        }
-        else if (Math.random() < probability && this.stagnation_breaker(data))
-            this.LocalSearch(data);
-    }
     
-    private boolean stagnation_breaker(InputData data) {
+    public boolean StagnationBreaker(InputData data) {
         for (int i = 0; i < this.Sequence.length - 1; i++) {
             LocalSearchMove best_lsm = null;
-            for (int j = i + 1; j < this.Sequence.length; j++) {    
+            for (int j = i + 1; j < this.Sequence.length; j++) {   
                 if(j > i + 1) {
                     LocalSearchMove lsm = new Swap(this.Sequence, i, j);
                     if(lsm.getGain(data) < 0d && (best_lsm == null || lsm.getGain() < best_lsm.getGain()))
@@ -156,24 +154,53 @@ public final class Tour implements Comparable<Tour> {
                         best_lsm = lsm2;
                 }
             }          
-            if (best_lsm == null)
-                continue;
-            best_lsm.Perform(this.Sequence);
-            this.Cost += best_lsm.getGain();
-            return true;
+            if (best_lsm != null) {
+                best_lsm.Perform(this.Sequence);
+                this.Cost += best_lsm.getGain();
+                return true;
+            }
         }
         return false;
     }
-    
-    @Override
-    public int compareTo(Tour gt) {
-        double diff = this.Cost - gt.getCost();
-        return (int) (diff * 100d);
+
+    public void LocalSearch(InputData data) {
+        if (this.Sequence.length < 2)
+            return;
+        boolean improved = false;
+        for (int i = 0; i < this.Sequence.length - 1; i++)
+            for (int j = i + 1; j < this.Sequence.length ; j++) {
+//            for (int l = this.Sequence.length - 1; l > k ; l--) {
+                LocalSearchMove lsm = new _2opt(this.Sequence, i , j);
+                double gain = lsm.getGain(data);
+                if (gain < 0d) {
+                    lsm.Perform(this.Sequence);
+                    this.Cost += gain;
+                    improved = true;
+                }
+            }
+        double probability = Math.sqrt(data.StopsCount) / (double) data.StopsCount;
+        boolean again = Math.random() < probability;
+        if (!again && improved) {
+            int max = (int) (Math.random() * Math.sqrt(data.StopsCount));
+            Move move = new Move(0, this.Sequence.length - 1);
+            for (int i = 0; i < max; i++)
+                move.LeftShift(this.Sequence);
+            this.LocalSearch(data);
+        }
+        else if (again && this.StagnationBreaker(data))
+            this.LocalSearch(data);
     }
     
-    private int compareTo(double d) {
-        double diff = this.Cost - d;
-        return (int) (diff * 100d);
+    @Override
+    public int compareTo(Tour tour) {
+        return Double.compare(this.Cost * 100d, tour.getCost() * 100d);
+    }
+    
+    @Override
+    public String toString() {
+        if (this.Sequence == null)
+            return "NULL";
+        return Arrays.toString(IntStream.of(this.Sequence).map(x -> x + 1).toArray());
     }
 
     public int[] getSequence() {
