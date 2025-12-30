@@ -125,6 +125,7 @@ public final class Tour implements Comparable<Tour> {
     }
     
     public boolean StagnationBreaker(InputData data) {
+	int max = (int) Math.sqrt(data.StopsCount);
         for (int i = 0; i < this.Sequence.length - 1; i++) {
             LocalSearchMove best_lsm = null;
             for (int j = i + 1; j < this.Sequence.length; j++) {   
@@ -133,7 +134,7 @@ public final class Tour implements Comparable<Tour> {
                     if(lsm.getGain(data) < 0d && (best_lsm == null || lsm.getGain() < best_lsm.getGain()))
                         best_lsm = lsm;
                 }
-                for (int n = j == i + 1 ? 1 : 0; n <= 2 && j + n < this.Sequence.length; n++) {
+                for (int n = j == i + 1 ? 1 : 0; n <= max && j + n < this.Sequence.length; n++) {
                     LocalSearchMove lsm1 = new RightShift(this.Sequence, i, j, n, true);
                     if(lsm1.getGain(data) < 0d && (best_lsm == null || lsm1.getGain() < best_lsm.getGain()))
                         best_lsm = lsm1;
@@ -143,7 +144,7 @@ public final class Tour implements Comparable<Tour> {
                     if(lsm2.getGain(data) < 0d && (best_lsm == null || lsm2.getGain() < best_lsm.getGain()))
                         best_lsm = lsm2;
                 }
-                for (int n = j == i + 1 ? 1 : 0; n <= 2 && i - n >= 0; n++) {
+                for (int n = j == i + 1 ? 1 : 0; n <= max && i - n >= 0; n++) {
                     LocalSearchMove lsm1 = new LeftShift(this.Sequence, i, j, n, true);
                     if(lsm1.getGain(data) < 0d && (best_lsm == null || lsm1.getGain() < best_lsm.getGain()))
                         best_lsm = lsm1;
@@ -187,7 +188,7 @@ public final class Tour implements Comparable<Tour> {
                 move.LeftShift(this.Sequence);
             this.LocalSearch(data);
         }
-        else if (again && this.StagnationBreaker(data))
+        else if (again && !improved && this.StagnationBreaker(data))
             this.LocalSearch(data);
     }
     
