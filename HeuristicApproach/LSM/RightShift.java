@@ -14,7 +14,7 @@ public class RightShift extends LocalSearchMove {
     private final boolean With2Opt;
 
     public RightShift(int[] sequence, int i, int j, int degree, boolean _2opt) {
-        super(sequence, i, j);
+        super("RightShift", sequence, i, j);
         this.Degree = degree;
         this.With2Opt = _2opt;
     }

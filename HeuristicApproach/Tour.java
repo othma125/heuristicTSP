@@ -158,6 +158,7 @@ public final class Tour implements Comparable<Tour> {
             if (best_lsm != null) {
                 best_lsm.Perform(this.Sequence);
                 this.Cost += best_lsm.getGain();
+                //if (!"Swap".equals(best_lsm.getName()))
                 return true;
             }
         }

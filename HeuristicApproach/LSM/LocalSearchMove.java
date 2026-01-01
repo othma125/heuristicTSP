@@ -15,11 +15,17 @@ public abstract class LocalSearchMove {
     final int[] Sequence;
     double Gain = 0d;
     final int I, J;
+    final String Name;
 
-    public LocalSearchMove(int[] sequence, int i, int j) {
+    public LocalSearchMove(String name, int[] sequence, int i, int j) {
+        this.Name = name;
         this.Sequence = sequence;
         this.I = i;
         this.J = j;
+    }
+
+    public String getName() {
+        return Name;
     }
 
     public double getGain() {

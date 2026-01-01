@@ -10,7 +10,7 @@ import HeuristicApproach.Move;
 public class Swap extends LocalSearchMove {
 
     public Swap(int[] sequence, int i, int j) {
-        super(sequence, i, j);
+        super("Swap", sequence, i, j);
     }
 
     @Override

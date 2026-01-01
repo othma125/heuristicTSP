@@ -10,7 +10,7 @@ import HeuristicApproach.Move;
 public class _2opt extends LocalSearchMove {
 
     public _2opt(int[] sequence, int i, int j) {
-        super(sequence, i, j);
+        super("2opt", sequence, i, j);
     }    
 
     @Override
