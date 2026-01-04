@@ -119,7 +119,6 @@ public final class Tour implements Comparable<Tour> {
             crossover_child.add(stop);
             non_duplication_set.add(stop);
         }
-        non_duplication_set.clear();
         Tour.mutation(crossover_child, mutation);
         return new Tour(data, crossover_child);
     }
@@ -168,25 +167,26 @@ public final class Tour implements Comparable<Tour> {
     public void LocalSearch(InputData data) {
         if (this.Sequence.length < 2)
             return;
-        boolean improved = false;
-        for (int i = 0; i < this.Sequence.length - 1; i++)
-            for (int j = i + 1; j < this.Sequence.length ; j++) {
+	int max = (int) Math.sqrt(data.StopsCount);
+        int improvementCounter = 0;
+        for (int i = 0; improvementCounter < max && i < this.Sequence.length - 1; i++)
+            for (int j = i + 1; improvementCounter < max && j < this.Sequence.length ; j++) {
 //            for (int l = this.Sequence.length - 1; l > k ; l--) {
                 LocalSearchMove lsm = new _2opt(this.Sequence, i , j);
                 double gain = lsm.getGain(data);
                 if (gain < 0d) {
                     lsm.Perform(this.Sequence);
                     this.Cost += gain;
-                    improved = true;
+                    improvementCounter++;
                 }
             }
-        double probability = Math.sqrt(data.StopsCount) / (double) data.StopsCount;
+        double probability = max / (double) data.StopsCount;
         boolean again = Math.random() < probability;
-        if ((!again && improved)
-		|| (again && !improved && this.StagnationBreaker(data))) {
-            int max = (int) (Math.random() * Math.sqrt(data.StopsCount));
+        if ((!again && improvementCounter > 0)
+		|| (again && improvementCounter == 0 && this.StagnationBreaker(data))) {
+            int n = (int) (Math.random() * Math.sqrt(data.StopsCount));
             Move move = new Move(0, this.Sequence.length - 1);
-            for (int i = 0; i < max; i++)
+            for (int i = 0; i < n; i++)
                 move.LeftShift(this.Sequence);
             this.LocalSearch(data);
         }

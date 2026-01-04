@@ -33,7 +33,7 @@ public class GeneticAlgorithm extends MetaHeuristic {
         super(data);
         this.PopulationSize = (int) Math.max(20, 10 * Math.log10(data.StopsCount));
         this.Population = new Tour[this.PopulationSize];
-        this.Futures = new HashSet<>(4 * this.PopulationSize, 1f);
+        this.Futures = new HashSet<>(2 * this.PopulationSize, 1f);
     }
     
     @Override
