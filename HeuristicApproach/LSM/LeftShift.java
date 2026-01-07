@@ -22,7 +22,7 @@ public class LeftShift extends LocalSearchMove {
     @Override
     public void Perform(int[] sequence) {
         IntStream.range(0, this.Degree + 1).mapToObj(i -> new Move(this.I - i, this.With2Opt ? this.J : this.J - i))
-                                            .forEach(motion -> motion.LeftShift(sequence));
+                                            .forEach(move -> move.LeftShift(sequence));
     }
 
     @Override
