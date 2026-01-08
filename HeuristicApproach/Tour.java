@@ -128,33 +128,33 @@ public final class Tour implements Comparable<Tour> {
         for (int i = 0; i < this.Sequence.length - 1; i++) {
             LocalSearchMove best_lsm = null;
             for (int j = i + 1; j < this.Sequence.length; j++) {   
-                if(j > i + 1) {
+                if (j > i + 1) {
                     LocalSearchMove lsm = new Swap(this.Sequence, i, j);
-                    if(lsm.getGain(data) < 0d && (best_lsm == null || lsm.getGain() < best_lsm.getGain()))
+                    if (best_lsm == null || lsm.getGain() < best_lsm.getGain())
                         best_lsm = lsm;
                 }
                 for (int n = j == i + 1 ? 1 : 0; n <= max && j + n < this.Sequence.length; n++) {
                     LocalSearchMove lsm1 = new RightShift(this.Sequence, i, j, n, true);
-                    if(lsm1.getGain(data) < 0d && (best_lsm == null || lsm1.getGain() < best_lsm.getGain()))
+                    if (best_lsm == null || lsm1.getGain() < best_lsm.getGain())
                         best_lsm = lsm1;
-                    if(n == 0)
+                    if (n == 0)
                         continue;
                     LocalSearchMove lsm2 = new RightShift(this.Sequence, i, j, n, false);
-                    if(lsm2.getGain(data) < 0d && (best_lsm == null || lsm2.getGain() < best_lsm.getGain()))
+                    if (best_lsm == null || lsm2.getGain() < best_lsm.getGain())
                         best_lsm = lsm2;
                 }
                 for (int n = j == i + 1 ? 1 : 0; n <= max && i - n >= 0; n++) {
                     LocalSearchMove lsm1 = new LeftShift(this.Sequence, i, j, n, true);
-                    if(lsm1.getGain(data) < 0d && (best_lsm == null || lsm1.getGain() < best_lsm.getGain()))
+                    if (best_lsm == null || lsm1.getGain() < best_lsm.getGain())
                         best_lsm = lsm1;
-                    if(n == 0)
+                    if (n == 0)
                         continue;
                     LocalSearchMove lsm2 = new LeftShift(this.Sequence, i, j, n, false);
-                    if(lsm2.getGain(data) < 0d && (best_lsm == null || lsm2.getGain() < best_lsm.getGain()))
+                    if (best_lsm == null || lsm2.getGain() < best_lsm.getGain())
                         best_lsm = lsm2;
                 }
             }          
-            if (best_lsm != null) {
+            if (best_lsm != null && best_lsm.getGain(data) < 0d) {
                 best_lsm.Perform(this.Sequence);
                 this.Cost += best_lsm.getGain();
                 //if (!"Swap".equals(best_lsm.getName()))
