@@ -171,7 +171,7 @@ public final class Tour implements Comparable<Tour> {
     public void LocalSearch(InputData data) {
         if (this.Sequence.length <= 2)
             return;
-	int max = (int) Math.sqrt(data.StopsCount);
+		int max = (int) Math.sqrt(data.StopsCount);
         int improvementCounter = 0;
         for (int i = 0; improvementCounter < max && i < this.Sequence.length - 1; i++)
             for (int j = i + 1; improvementCounter < max && j < this.Sequence.length ; j++) {
