@@ -185,8 +185,8 @@ public final class Tour implements Comparable<Tour> {
                 }
             }
         double probability = max / (double) data.StopsCount;
-        boolean again = Math.random() < probability;
-        if ((!again && improvementCounter > 0) || (again && improvementCounter < max && this.StagnationBreaker(data))) {
+        boolean again = Math.random() > probability;
+        if ((again && improvementCounter > 0) || (!again && improvementCounter < max && this.StagnationBreaker(data))) {
             int n = (int) (Math.random() * Math.sqrt(data.StopsCount));
             Move move = new Move(0, this.Sequence.length - 1);
             for (int i = 0; i < n; i++)
