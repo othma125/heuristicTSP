@@ -147,9 +147,11 @@ public class GeneticAlgorithm extends MetaHeuristic {
     
     private boolean nonStopCondition() {
         long current_time = System.currentTimeMillis();
-        double probability = current_time - this.BestSolutionReachingTime;
+        if (current_time - this.BestSolutionReachingTime < this.StagnationMinTime)
+            return false;
+        double probability = current_time - this.BestSolutionReachingTime - this.StagnationMinTime;
         probability /= (double) (current_time - this.StartTime);
-        return current_time - this.BestSolutionReachingTime < this.StagnationMinTime || Math.random() > probability;
+        return Math.random() > probability;
     }
 
     @Override
