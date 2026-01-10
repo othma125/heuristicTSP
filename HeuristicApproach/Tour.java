@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.Arrays;
 
 /*
  * To change this template, choose Tools | Templates
@@ -168,7 +169,7 @@ public final class Tour implements Comparable<Tour> {
     }
 
     public void LocalSearch(InputData data) {
-        if (this.Sequence.length < 2)
+        if (this.Sequence.length <= 2)
             return;
 	int max = (int) Math.sqrt(data.StopsCount);
         int improvementCounter = 0;
