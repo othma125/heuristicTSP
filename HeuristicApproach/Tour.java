@@ -171,11 +171,14 @@ public final class Tour implements Comparable<Tour> {
     public void LocalSearch(InputData data) {
         if (this.Sequence.length <= 2)
             return;
-		int max = (int) Math.sqrt(data.StopsCount);
+	this.LocalSearch(data, Math.sqrt(data.StopsCount) / data.StopsCount);
+	}
+
+    public void LocalSearch(InputData data, double probability) {
+	int max = (int) Math.sqrt(data.StopsCount);
         int improvementCounter = 0;
         for (int i = 0; improvementCounter < max && i < this.Sequence.length - 1; i++)
             for (int j = i + 1; improvementCounter < max && j < this.Sequence.length ; j++) {
-//            for (int l = this.Sequence.length - 1; l > k ; l--) {
                 LocalSearchMove lsm = new _2opt(this.Sequence, i , j);
                 double gain = lsm.getGain(data);
                 if (gain < 0d) {
@@ -184,14 +187,13 @@ public final class Tour implements Comparable<Tour> {
                     improvementCounter++;
                 }
             }
-        double probability = max / (double) data.StopsCount;
         boolean again = Math.random() > probability;
         if ((again && improvementCounter > 0) || (!again && improvementCounter < max && this.StagnationBreaker(data))) {
             int n = (int) (Math.random() * Math.sqrt(data.StopsCount));
             Move move = new Move(0, this.Sequence.length - 1);
             for (; n > 0; n--)
                 move.LeftShift(this.Sequence);
-            this.LocalSearch(data);
+            this.LocalSearch(data, probability);
         }
     }
     
