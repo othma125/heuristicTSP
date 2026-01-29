@@ -7,12 +7,12 @@ Reference TSPLIB STSP page: http://comopt.ifi.uni-heidelberg.de/software/TSPLIB9
 ## Project layout
 
 - Main programs
-  - [benchmark_main_class.java](benchmark_main_class.java): batch benchmark over [ALL_tsp](ALL_tsp) and writes “heuristic approach results.csv”.
-  - [heuristic_algorithm_main.java](heuristic_algorithm_main.java): runs one chosen instance.
+  - [benchmark.java](benchmark.java): batch benchmark over [ALL_tsp](ALL_tsp) and writes “heuristic approach results.csv”.
+  - [main.java](main.java): runs one chosen instance.
 - Core algorithm
   - [`HeuristicApproach.GeneticAlgorithm`](HeuristicApproach/GeneticAlgorithm.java): Memetic algorithm (selection, crossover, mutation, local search).
   - [`HeuristicApproach.MetaHeuristic`](HeuristicApproach/MetaHeuristic.java): base class handling timing, best-so-far, and thread pool.
-  - [`HeuristicApproach.GiantTour`](HeuristicApproach/GiantTour.java): permutation representation, cost evaluation, and local search.
+  - [`HeuristicApproach.Tour`](HeuristicApproach/Tour.java): permutation representation, cost evaluation, and local search.
 - Data layer
   - [`Data.InputData`](Data/InputData.java): TSPLIB parser, distance computation with matrix/cache strategy.
   - [ALL_tsp](ALL_tsp): TSPLIB instances (.tsp).
@@ -28,12 +28,12 @@ Reference TSPLIB STSP page: http://comopt.ifi.uni-heidelberg.de/software/TSPLIB9
 
 - Population-based search with genetic operators, hybridized with local search.
 - Key components:
-  - Representation: permutation handled by [`HeuristicApproach.GiantTour`](HeuristicApproach/GiantTour.java).
+  - Representation: permutation handled by [`HeuristicApproach.Tour`](HeuristicApproach/Tour.java).
   - Initialization: randomized permutations locally improved.
   - Selection: tournament selection (size 5).
   - Crossover: applied with rate 0.9.
   - Mutation: applied with rate 0.1.
-  - Local search: invoked inside `GiantTour` construction/improvement.
+  - Local search: invoked inside `Tour` construction/improvement.
   - Parallelism: work submitted to a fixed thread pool sized to available CPU cores (see [`HeuristicApproach.MetaHeuristic`](HeuristicApproach/MetaHeuristic.java)).
   - Stopping: dynamic time budget based on instance size (`StopTime = max(200, 200 * ln(n))` ms).
 
@@ -49,7 +49,7 @@ Reference TSPLIB STSP page: http://comopt.ifi.uni-heidelberg.de/software/TSPLIB9
 ## Benchmarking against TSPLIB best-known
 
 - [tsplib_best_known.csv](tsplib_best_known.csv) provides best-known costs by file name (without extension).
-- [benchmark_main_class.java](benchmark_main_class.java) computes:
+- [benchmark.java](benchmark.java) computes:
   - Cost
   - Time to reach best-so-far (ms)
   - Gap (%) vs. best-known
@@ -65,7 +65,7 @@ Reference TSPLIB STSP page: http://comopt.ifi.uni-heidelberg.de/software/TSPLIB9
 
 - Open the folder in VS Code.
 - To run one instance:
-  - Edit file name in [heuristic_algorithm_main.java](heuristic_algorithm_main.java).
+  - Edit file name in [main.java](main.java).
   - Run the main class “heuristic_algorithm_main”.
 - To run the full benchmark:
   - Ensure [ALL_tsp](ALL_tsp) contains the instances and [tsplib_best_known.csv](tsplib_best_known.csv) is present.
