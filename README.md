@@ -66,7 +66,7 @@ Reference TSPLIB STSP page: http://comopt.ifi.uni-heidelberg.de/software/TSPLIB9
 - Open the folder in VS Code.
 - To run one instance:
   - Edit file name in [main.java](main.java).
-  - Run the main class “heuristic_algorithm_main”.
+  - Run the main class “main”.
 - To run the full benchmark:
   - Ensure [ALL_tsp](ALL_tsp) contains the instances and [tsplib_best_known.csv](tsplib_best_known.csv) is present.
   - Run the main class “benchmark_main_class”.
@@ -79,18 +79,18 @@ Reference TSPLIB STSP page: http://comopt.ifi.uni-heidelberg.de/software/TSPLIB9
   $files = Get-ChildItem -Recurse -Filter *.java | ForEach-Object { $_.FullName }
   javac -encoding UTF-8 -d out $files
   # Single instance
-  java -cp out heuristic_algorithm_main
+  java -cp out main
   # Benchmark all
-  java -cp out benchmark_main_class
+  java -cp out benchmark
   ```
 - Linux/macOS (bash):
   ```bash
   mkdir -p out
   javac -encoding UTF-8 -d out $(find . -name "*.java")
   # Single instance
-  java -cp out heuristic_algorithm_main
+  java -cp out main
   # Benchmark all
-  java -cp out benchmark_main_class
+  java -cp out benchmark
   ```
 
 Java options you may find useful:
@@ -99,15 +99,15 @@ Java options you may find useful:
 
 Example:
 ```bash
-java -Xmx2g -Dtsp.matrix.max=300 -cp out benchmark_main_class
+java -Xmx2g -Dtsp.matrix.max=300 -cp out benchmark
 ```
 
 ## Customizing what runs
 
 - Single instance file:
-  - Edit the constant `file_name` in [heuristic_algorithm_main.java](heuristic_algorithm_main.java).
+  - Edit the constant `file_name` in [main.java](main.java).
 - Benchmark scope:
-  - Edit directory and max dimension in [`benchmark_main_class.main`](benchmark_main_class.java):
+  - Edit directory and max dimension in [`benchmark`](benchmark.java):
     - Directory: “ALL_tsp”
     - Max dimension filter: `final int max_dimension = 500;`
 - Algorithm parameters:
