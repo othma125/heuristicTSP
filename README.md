@@ -7,16 +7,16 @@ Reference TSPLIB STSP page: http://comopt.ifi.uni-heidelberg.de/software/TSPLIB9
 ## Project layout
 
 - Main programs
-  - [benchmark.java](benchmark.java): batch benchmark over [ALL_tsp](ALL_tsp) and writes “heuristic approach results.csv”.
-  - [main.java](main.java): runs one chosen instance.
+  - [benchmark.java](Algorithm/benchmark.java): batch benchmark over [ALL_tsp](Algorithm/ALL_tsp) and writes “heuristic approach results.csv”.
+  - [main.java](Algorithm/main.java): runs one chosen instance.
 - Core algorithm
-  - [`HeuristicApproach.GeneticAlgorithm`](HeuristicApproach/GeneticAlgorithm.java): Memetic algorithm (selection, crossover, mutation, local search).
-  - [`HeuristicApproach.MetaHeuristic`](HeuristicApproach/MetaHeuristic.java): base class handling timing, best-so-far, and thread pool.
-  - [`HeuristicApproach.Tour`](HeuristicApproach/Tour.java): permutation representation, cost evaluation, and local search.
+  - [`Algorithm.HeuristicApproach.GeneticAlgorithm`](Algorithm/HeuristicApproach/GeneticAlgorithm.java): Memetic algorithm (selection, crossover, mutation, local search).
+  - [`Algorithm.HeuristicApproach.MetaHeuristic`](Algorithm/HeuristicApproach/MetaHeuristic.java): base class handling timing, best-so-far, and thread pool.
+  - [`Algorithm.HeuristicApproach.Tour`](Algorithm/HeuristicApproach/Tour.java): permutation representation, cost evaluation, and local search.
 - Data layer
-  - [`Data.InputData`](Data/InputData.java): TSPLIB parser, distance computation with matrix/cache strategy.
-  - [ALL_tsp](ALL_tsp): TSPLIB instances (.tsp).
-  - [tsplib_best_known.csv](tsplib_best_known.csv): best-known costs for benchmarks.
+  - [`Algorithm.Data.InputData`](Algorithm/Data/InputData.java): TSPLIB parser, distance computation with matrix/cache strategy.
+  - [ALL_tsp](Algorithm/ALL_tsp): TSPLIB instances (.tsp).
+  - [tsplib_best_known.csv](Algorithm/ALL_tsp/tsplib_best_known.csv): best-known costs for benchmarks.
 
 ## TSP (STSP) in brief
 
@@ -28,18 +28,18 @@ Reference TSPLIB STSP page: http://comopt.ifi.uni-heidelberg.de/software/TSPLIB9
 
 - Population-based search with genetic operators, hybridized with local search.
 - Key components:
-  - Representation: permutation handled by [`HeuristicApproach.Tour`](HeuristicApproach/Tour.java).
+  - Representation: permutation handled by [`Algorithm.HeuristicApproach.Tour`](Algorithm/HeuristicApproach/Tour.java).
   - Initialization: randomized permutations locally improved.
   - Selection: tournament selection (size 5).
   - Crossover: applied with rate 0.9.
   - Mutation: applied with rate 0.1.
   - Local search: invoked inside `Tour` construction/improvement.
-  - Parallelism: work submitted to a fixed thread pool sized to available CPU cores (see [`HeuristicApproach.MetaHeuristic`](HeuristicApproach/MetaHeuristic.java)).
+  - Parallelism: work submitted to a fixed thread pool sized to available CPU cores (see [`Algorithm.HeuristicApproach.MetaHeuristic`](Algorithm/HeuristicApproach/MetaHeuristic.java)).
   - Stopping: dynamic time budget based on instance size (`StopTime = max(200, 200 * ln(n))` ms).
 
 ## TSPLIB parsing and distances
 
-- [`Data.InputData`](Data/InputData.java) parses TSPLIB headers and coordinates.
+- [`Algorithm.Data.InputData`](Algorithm/Data/InputData.java) parses TSPLIB headers and coordinates.
 - Distance storage strategy:
   - For small n, uses a dense matrix for speed.
   - For larger n, uses a concurrent cache.
@@ -48,12 +48,35 @@ Reference TSPLIB STSP page: http://comopt.ifi.uni-heidelberg.de/software/TSPLIB9
 
 ## Benchmarking against TSPLIB best-known
 
-- [tsplib_best_known.csv](tsplib_best_known.csv) provides best-known costs by file name (without extension).
-- [benchmark.java](benchmark.java) computes:
+- [tsplib_best_known.csv](Algorithm/ALL_tsp/tsplib_best_known.csv) provides best-known costs by file name (without extension).
+- [benchmark.java](Algorithm/benchmark.java) computes:
   - Cost
   - Time to reach best-so-far (ms)
   - Gap (%) vs. best-known
 - Output CSV: “heuristic approach results.csv”
+
+## Web landing page
+
+A dependency-free landing page (built on the JDK `HttpServer`) lets you pick a TSPLIB instance, watch the live solver log, and visualize the best tour in the browser.
+
+- [`Web.Server`](Web/Server.java): serves [Web/index.html](Web/index.html), [Web/app.js](Web/app.js), [Web/styles.css](Web/styles.css); lists [ALL_tsp](Algorithm/ALL_tsp) instances, streams the solver log over Server-Sent Events, and returns the final tour (with cost, time, and gap vs. [tsplib_best_known.csv](Algorithm/ALL_tsp/tsplib_best_known.csv)).
+- The **Solve** button runs the memetic algorithm; **Stop** ends it early (`GeneticAlgorithm.requestStop()`); **Visualize** draws the closed Hamiltonian cycle over the cities; **Save** exports a TSPLIB `.tour` file.
+- Instances with explicit distance matrices (no `NODE_COORD_SECTION`) still solve, but cannot be plotted.
+
+Run it (from the project root):
+
+```bash
+./run-server.sh          # compiles everything, starts the server, opens the browser
+```
+
+Or manually:
+
+```bash
+javac -encoding UTF-8 -d out $(find . -name '*.java' ! -path './out/*')
+java -cp out Web.Server   # then open http://localhost:8080
+```
+
+The port comes from the CLI argument, then `PORT` in `.env`, then `8080`. Use `./kill-server.sh` to stop it.
 
 ## Requirements
 
@@ -65,11 +88,11 @@ Reference TSPLIB STSP page: http://comopt.ifi.uni-heidelberg.de/software/TSPLIB9
 
 - Open the folder in VS Code.
 - To run one instance:
-  - Edit file name in [main.java](main.java).
-  - Run the main class “main”.
+  - Edit file name in [Algorithm/main.java](Algorithm/main.java).
+  - Run the main class `Algorithm.heuristic_algorithm_main`.
 - To run the full benchmark:
-  - Ensure [ALL_tsp](ALL_tsp) contains the instances and [tsplib_best_known.csv](tsplib_best_known.csv) is present.
-  - Run the main class “benchmark_main_class”.
+  - Ensure [ALL_tsp](Algorithm/ALL_tsp) contains the instances and [tsplib_best_known.csv](Algorithm/ALL_tsp/tsplib_best_known.csv) is present.
+  - Run the main class `Algorithm.benchmark_main_class`.
 
 ## Run from terminal
 
@@ -79,18 +102,18 @@ Reference TSPLIB STSP page: http://comopt.ifi.uni-heidelberg.de/software/TSPLIB9
   $files = Get-ChildItem -Recurse -Filter *.java | ForEach-Object { $_.FullName }
   javac -encoding UTF-8 -d out $files
   # Single instance
-  java -cp out main
+  java -cp out Algorithm.heuristic_algorithm_main
   # Benchmark all
-  java -cp out benchmark
+  java -cp out Algorithm.benchmark_main_class
   ```
 - Linux/macOS (bash):
   ```bash
   mkdir -p out
   javac -encoding UTF-8 -d out $(find . -name "*.java")
   # Single instance
-  java -cp out main
+  java -cp out Algorithm.heuristic_algorithm_main
   # Benchmark all
-  java -cp out benchmark
+  java -cp out Algorithm.benchmark_main_class
   ```
 
 Java options you may find useful:
@@ -99,20 +122,20 @@ Java options you may find useful:
 
 Example:
 ```bash
-java -Xmx2g -Dtsp.matrix.max=300 -cp out benchmark
+java -Xmx2g -Dtsp.matrix.max=300 -cp out Algorithm.benchmark_main_class
 ```
 
 ## Customizing what runs
 
 - Single instance file:
-  - Edit the constant `file_name` in [main.java](main.java).
+  - Edit the constant `file_name` in [main.java](Algorithm/main.java).
 - Benchmark scope:
-  - Edit directory and max dimension in [`benchmark`](benchmark.java):
+  - Edit directory and max dimension in [`benchmark`](Algorithm/benchmark.java):
     - Directory: “ALL_tsp”
     - Max dimension filter: `final int max_dimension = 500;`
 - Algorithm parameters:
-  - Crossover/mutation rates and population sizing are in [`HeuristicApproach.GeneticAlgorithm`](HeuristicApproach/GeneticAlgorithm.java).
-  - Time budget and threading in [`HeuristicApproach.MetaHeuristic`](HeuristicApproach/MetaHeuristic.java).
+  - Crossover/mutation rates and population sizing are in [`Algorithm.HeuristicApproach.GeneticAlgorithm`](Algorithm/HeuristicApproach/GeneticAlgorithm.java).
+  - Time budget and threading in [`Algorithm.HeuristicApproach.MetaHeuristic`](Algorithm/HeuristicApproach/MetaHeuristic.java).
 
 ## Output
 

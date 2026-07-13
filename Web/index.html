@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heuristic TSP Solver — Othmane EL YAAKOUBI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 46 46" aria-hidden="true">
+      <path class="path" d="M6 34 L15 10 L27 22 L40 12 L34 38 Z"/>
+      <circle class="node start" cx="6" cy="34" r="3.4"/>
+      <circle class="node" cx="15" cy="10" r="2.6"/>
+      <circle class="node" cx="27" cy="22" r="2.6"/>
+      <circle class="node" cx="40" cy="12" r="2.6"/>
+      <circle class="node" cx="34" cy="38" r="2.6"/>
+    </svg>
+    <div>
+      <h1>Heuristic <b>TSP</b> Solver</h1>
+      <div class="sub">Memetic algorithm — genetic search + local search over the symmetric TSP</div>
+    </div>
+  </div>
+  <button class="toggle" id="theme">Theme</button>
+</header>
+
+<main>
+  <section class="solver">
+    <div class="eyebrow">Plotting table</div>
+    <h2>Solve an instance</h2>
+    <div class="row">
+      <div>
+        <label>TSPLIB instance</label>
+        <select id="instance"></select>
+      </div>
+      <div style="flex:0;display:flex;gap:10px;align-items:flex-end;">
+        <button class="primary" id="solve">Solve</button>
+        <button id="viz" disabled>Visualize</button>
+      </div>
+    </div>
+    <div id="stats"></div>
+    <div class="panels">
+      <div>
+        <h3>Solver log</h3>
+        <div id="log">Select an instance and press Solve — the live solver log appears here.</div>
+      </div>
+      <div>
+        <h3>
+          <span>Tour (.tour format)</span>
+          <button id="save" disabled>Save</button>
+        </h3>
+        <pre id="solText">The final tour appears here once the calculation ends.</pre>
+      </div>
+    </div>
+    <canvas id="canvas" width="1040" height="560" style="display:none;"></canvas>
+  </section>
+
+  <section class="approach">
+    <div class="eyebrow">Method</div>
+    <h2>The approach</h2>
+    <p><em>Memetic optimization for the symmetric Traveling Salesman Problem.</em>
+    Given <i>n</i> cities and symmetric distances, the solver searches for a minimum-length
+    Hamiltonian cycle — a closed tour visiting every city exactly once — by hybridizing a
+    <b>genetic algorithm</b> with an embedded <b>local search</b>.</p>
+    <h3>Permutation representation</h3>
+    <p>Each individual is a permutation of the cities. The population is initialized with random
+    permutations that are immediately improved by local search, and evolves under tournament
+    selection (size 5), order-based crossover (rate 0.9) and 2-opt mutation (rate 0.1).</p>
+    <h3>Embedded local search</h3>
+    <p>Every offspring is refined in place with <b>2-opt</b> plus swap and left/right shift moves,
+    and a stagnation breaker escapes local optima. This makes the algorithm <i>memetic</i>: the
+    genetic operators explore, while local search intensifies each candidate before it competes.</p>
+    <h3>Parallelism &amp; stopping</h3>
+    <p>Offspring are built and evaluated on a fixed thread pool sized to the available CPU cores.
+    Distances use a dense matrix for small instances and a concurrent cache for larger ones. The run
+    stops on a dynamic, size-aware time budget (or when you press Stop). Built in Java 23.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Author</div>
+    <h2>About the author</h2>
+    <div class="profile">
+      <img src="/assets/profile.jpg" alt="Othmane EL YAAKOUBI">
+      <div>
+        <b>Othmane EL YAAKOUBI</b> — Operations Research Expert &amp; Backend Developer<br>
+        <span class="sub">Metaheuristics · Vehicle Routing &amp; Scheduling · Large-scale optimization</span>
+        <ul>
+          <li>Memetic algorithms for TSP and CVRP; mathematical models for EV routing and train dispatching.</li>
+          <li>Urban transit optimization (M'DINA BUS, Casablanca): +22% daily revenue via genetic algorithm, delivered in Java.</li>
+          <li>Manufacturing layout &amp; scheduling (UTT, Troyes): GA + ant colony and NSGA-II bi-objective scheduling.</li>
+          <li>Tooling: Cplex, Gurobi, Pulp, scikit-learn, PyTorch · C/C++, Java, Python, SQL · Flask, SQLAlchemy, Redis.</li>
+          <li>Languages: Arabic (native), English &amp; French (full professional).</li>
+        </ul>
+        <a href="mailto:othma125@gmail.com">othma125@gmail.com</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="/app.js"></script>
+</body>
+</html>

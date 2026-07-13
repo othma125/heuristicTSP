@@ -1,23 +1,33 @@
-package Data;
+package Algorithm.Data;
 
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.ConcurrentMap;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+import java.util.concurrent.ConcurrentMap;
 
 /**
+ * TSPLIB instance reader and distance provider.
+ *
+ * <p>Parses a TSPLIB {@code .tsp} file (header, {@code NODE_COORD_SECTION} or
+ * {@code EDGE_WEIGHT_SECTION}) and answers pairwise distance queries through the
+ * {@link CostMatrix} contract. Distances are stored either in a dense matrix
+ * (small instances) or a thread-safe lazy cache (large instances); coordinate
+ * distances are computed on demand according to the instance's
+ * {@code EDGE_WEIGHT_TYPE} (EUC_2D, CEIL_2D, GEO, ATT, ...). Instances are
+ * {@link AutoCloseable} so their internal buffers can be released promptly.
  *
  * @author Othmane
  */
-
 public class InputData implements CostMatrix, Comparable<InputData>, AutoCloseable {
 
+    /** Number of stops (the instance dimension). */
     public int StopsCount = 0;
     // Thread-safe distance cache: multiple threads may call getCost concurrently
     private ConcurrentMap<Edge, Double> CostSet = null;          // explicit or lazily cached distances
@@ -30,13 +40,26 @@ public class InputData implements CostMatrix, Comparable<InputData>, AutoCloseab
     private static final String MATRIX_PROP = "tsp.matrix.max";
     private final Map<String, String> header = new HashMap<>();
     private final List<Location> Coordinates = new ArrayList<>();
+    /** The instance file name (with extension). */
     public final String FileName;
     private volatile boolean closed = false; // indicates resources released
     
+    /**
+     * Loads a TSPLIB instance with no dimension cap.
+     *
+     * @param file the {@code .tsp} file to parse
+     */
     public InputData(File file) {
         this(file, Integer.MAX_VALUE);
     }
-    
+
+    /**
+     * Loads a TSPLIB instance, skipping the body if the declared dimension
+     * exceeds {@code max_dimension} (used to filter large instances in batch runs).
+     *
+     * @param file the {@code .tsp} file to parse
+     * @param max_dimension the largest dimension to fully load
+     */
     public InputData(File file, int max_dimension) {
         this.FileName = file.getName();
 //        System.out.println(this.FileName);
@@ -396,6 +419,16 @@ public class InputData implements CostMatrix, Comparable<InputData>, AutoCloseab
         }
     }
 
+    /**
+     * Returns the (possibly lazily computed) distance for the given edge,
+     * caching coordinate-based results for reuse.
+     *
+     * @param edge the edge to look up
+     * @return the distance between the edge's endpoints (0 for self-loops)
+     * @throws IndexOutOfBoundsException if an endpoint is out of range
+     * @throws IllegalStateException if this instance has been closed, or an
+     *         explicit distance is missing
+     */
     @Override
     public double getCost(Edge edge) {
         this.ensureOpen();
@@ -484,12 +517,19 @@ public class InputData implements CostMatrix, Comparable<InputData>, AutoCloseab
             throw new IllegalStateException("InputData instance already closed: " + FileName);
     }
 
+    /**
+     * Orders instances by ascending number of stops.
+     *
+     * @param data the instance to compare with
+     * @return a negative, zero, or positive value as this instance is smaller,
+     *         equal, or larger
+     */
     @Override
     public int compareTo(InputData data) {
         return this.StopsCount - data.StopsCount;
     }
 
-    // Simple coordinate holder
+    /** Simple immutable holder for a node's two coordinates. */
     static class Location {
         
         final double latitude;

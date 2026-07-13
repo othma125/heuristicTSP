@@ -1,0 +1,125 @@
+/* Author: Othmane — "night chart" plotting-table identity */
+
+:root {
+  --bg:#0a1922; --panel:#0e222e; --panel2:#122a38; --border:#1d3a49;
+  --grid:rgba(120,185,195,.055);
+  --text:#e8f1f0; --muted:#7f9ea8;
+  --accent:#ff7a3c; --accent-ink:#0a1922; --teal:#37c9b0; --danger:#ff5c57;
+  --accent2:var(--accent); /* app.js resets the Solve button to this after a run */
+  --readout-bg:#05141b; --readout:#6fe0c4;
+  --font-display:"Space Grotesk",system-ui,sans-serif;
+  --font-body:system-ui,"Segoe UI",Roboto,sans-serif;
+  --font-mono:ui-monospace,"SF Mono",Consolas,monospace;
+}
+[data-theme="light"] {
+  --bg:#e7eef0; --panel:#f6fafa; --panel2:#ffffff; --border:#c6d7da;
+  --grid:rgba(20,70,80,.05);
+  --text:#0d2029; --muted:#4d6b73;
+  --accent:#dd4f18; --accent-ink:#ffffff; --teal:#0e8f7e; --danger:#d23b34;
+  --readout-bg:#0a1922; --readout:#6fe0c4;
+}
+* { box-sizing:border-box; }
+
+body {
+  margin:0; font-family:var(--font-body); background:var(--bg); color:var(--text); line-height:1.55;
+  /* signature: graph-paper plotting surface */
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:27px 27px;
+}
+
+/* --- header / chart title block --- */
+header {
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  padding:22px clamp(20px,5vw,48px); border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg, color-mix(in srgb, var(--panel) 70%, transparent), transparent);
+}
+.brand { display:flex; align-items:center; gap:16px; }
+.mark { width:46px; height:46px; flex:0 0 auto; }
+.mark .path { fill:none; stroke:var(--accent); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round;
+  stroke-dasharray:220; stroke-dashoffset:220; animation:draw 1.4s .2s ease forwards; }
+.mark .node { fill:var(--teal); }
+.mark .node.start { fill:var(--accent); }
+@keyframes draw { to { stroke-dashoffset:0; } }
+header h1 { font-family:var(--font-display); font-size:23px; font-weight:600; letter-spacing:-.01em; margin:0; }
+header h1 b { color:var(--accent); font-weight:600; }
+header .sub { color:var(--muted); font-size:13px; margin-top:2px; }
+.toggle { background:none; border:1px solid var(--border); color:var(--muted); font-size:12px;
+  text-transform:uppercase; letter-spacing:.08em; padding:8px 14px; }
+.toggle:hover { color:var(--text); border-color:var(--accent); }
+
+main { max-width:1080px; margin:0 auto; padding:clamp(20px,4vw,36px); }
+
+section { background:var(--panel); border:1px solid var(--border); border-radius:6px;
+  padding:clamp(18px,3vw,28px); margin-bottom:22px; }
+
+/* eyebrow label above section titles — a chart legend tag, not a step number */
+.eyebrow { font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--accent); display:flex; align-items:center; gap:8px; margin:0 0 10px; }
+.eyebrow::before { content:""; width:14px; height:1px; background:var(--accent); }
+h2 { font-family:var(--font-display); margin:0 0 16px; font-size:19px; font-weight:600; letter-spacing:-.01em; }
+
+/* --- solver instrument panel (the hero) --- */
+.solver { position:relative; }
+label { font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--muted); display:block; margin-bottom:6px; }
+select, button { font:inherit; padding:11px 14px; border-radius:5px; border:1px solid var(--border);
+  background:var(--panel2); color:var(--text); }
+select:focus-visible, button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+button { cursor:pointer; transition:filter .15s, border-color .15s; }
+button:hover:not(:disabled) { border-color:var(--accent); }
+button.primary { background:var(--accent); color:var(--accent-ink); border-color:var(--accent); font-weight:600; }
+button.primary:hover:not(:disabled) { filter:brightness(1.08); }
+button:disabled { opacity:.45; cursor:not-allowed; }
+.row { display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end; }
+.row > div { flex:1; min-width:180px; }
+
+/* stats — instrument readouts */
+#stats { margin-top:20px; display:flex; gap:14px; flex-wrap:wrap; }
+#stats:empty { display:none; }
+#stats .stat { display:flex; flex-direction:column; gap:4px; padding:10px 16px 10px 14px;
+  border-left:2px solid var(--border); background:var(--panel2); border-radius:0 5px 5px 0; min-width:96px; }
+#stats .k { font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
+#stats .v { font-family:var(--font-mono); font-size:24px; line-height:1; font-variant-numeric:tabular-nums; color:var(--text); }
+#stats .v.good { color:var(--teal); }
+#stats .v.warn { color:#e3a83a; }
+
+.panels { display:flex; gap:16px; margin-top:20px; flex-wrap:wrap; }
+.panels > div { flex:1; min-width:280px; }
+.panels h3 { font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  margin:0 0 6px; color:var(--muted); display:flex; align-items:center; justify-content:space-between; min-height:38px; }
+.panels h3 button { padding:6px 12px; font-size:11px; text-transform:uppercase; letter-spacing:.06em; }
+#log, #solText { background:var(--readout-bg); color:var(--readout); font-family:var(--font-mono); font-size:12.5px;
+  height:240px; overflow:auto; padding:14px; border-radius:5px; white-space:pre-wrap; border:1px solid var(--border); margin:0; }
+
+canvas { width:100%; background:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px), var(--panel2);
+  background-size:27px 27px, 27px 27px, auto;
+  border:1px solid var(--border); border-radius:5px; margin-top:20px; }
+/* canvas visibility is owned by app.js — hidden until the first Visualize click */
+
+/* --- approach --- */
+.approach p { color:var(--muted); max-width:68ch; }
+.approach p em { color:var(--text); font-style:normal; font-family:var(--font-display); }
+.approach h3 { font-family:var(--font-display); font-size:15px; margin:22px 0 4px; }
+.approach b { color:var(--text); font-weight:600; }
+
+/* --- author --- */
+.profile { display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap; }
+.profile img { width:112px; height:112px; border-radius:6px; object-fit:cover; border:1px solid var(--border); }
+.profile ul { margin:10px 0 0; padding-left:18px; color:var(--muted); }
+.profile ul li { margin-bottom:4px; }
+.profile .sub { color:var(--muted); font-size:13px; }
+
+a { color:var(--accent); text-underline-offset:3px; }
+
+@media (max-width:560px) {
+  header { flex-wrap:wrap; }
+  #stats .stat { flex:1; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .mark .path { animation:none; stroke-dashoffset:0; }
+  * { transition:none !important; }
+}

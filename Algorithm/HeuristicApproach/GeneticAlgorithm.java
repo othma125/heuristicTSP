@@ -1,11 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package HeuristicApproach;
+package Algorithm.HeuristicApproach;
 
-import Data.InputData;
+import Algorithm.Data.InputData;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -16,6 +11,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 /**
+ * Memetic algorithm for the symmetric TSP: a steady-state genetic algorithm
+ * whose offspring are refined by the local search embedded in {@link Tour}.
+ *
+ * <p>The population is kept sorted by cost; each generation performs tournament
+ * selection (size 5), order-based crossover (rate 0.9) and 2-opt mutation
+ * (rate 0.1), submitting offspring construction to the shared thread pool. The
+ * run stops on a stochastic, stagnation-aware condition (see
+ * {@link #nonStopCondition()}) or when {@link #requestStop()} is called.
  *
  * @author Othmane
  */
@@ -27,8 +30,15 @@ public class GeneticAlgorithm extends MetaHeuristic {
     private final int PopulationSize;
     private final int TournamentSize = 5;
     private long EndTime;
+    private volatile boolean StopRequested = false;
     private final Set<Future<Tour>> Futures;
     
+    /**
+     * Builds the solver and sizes the population from the instance dimension
+     * ({@code max(20, 10 * log10(n))}).
+     *
+     * @param data the instance to solve
+     */
     public GeneticAlgorithm(InputData data) {
         super(data);
         this.PopulationSize = (int) Math.max(20, 10 * Math.log10(data.StopsCount));
@@ -36,6 +46,10 @@ public class GeneticAlgorithm extends MetaHeuristic {
         this.Futures = new HashSet<>(2 * this.PopulationSize, 1f);
     }
     
+    /**
+     * Runs the memetic search: seeds the initial population, then repeatedly
+     * breeds a generation of offspring until the stop condition triggers.
+     */
     @Override
     public void Run() {
         System.out.println("File to solve = " + this.Data.FileName);
@@ -56,11 +70,24 @@ public class GeneticAlgorithm extends MetaHeuristic {
                     Logger.getLogger(GeneticAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
                 }
             this.FuturesJoin();
-        } while(this.nonStopCondition());
+        } while(!this.StopRequested && this.nonStopCondition());
         this.Executor.shutdown();
         this.EndTime = System.currentTimeMillis();
     }
+
+    /** Asks the search loop to stop after the current generation (used by the web UI). */
+    public void requestStop() {
+        this.StopRequested = true;
+    }
     
+    /**
+     * Selects two parents by tournament and submits offspring construction to
+     * the thread pool: a pair of crossovers when crossover applies, otherwise a
+     * fresh or best-derived random tour.
+     *
+     * @throws InterruptedException if the submitting thread is interrupted
+     * @throws ExecutionException if an offspring task fails
+     */
     private void Selection() throws InterruptedException, ExecutionException {
         Tour parent1 = this.tournamentSelection();
         Tour parent2 = this.tournamentSelection();
@@ -91,6 +118,12 @@ public class GeneticAlgorithm extends MetaHeuristic {
         }
     }
     
+    /**
+     * Inserts an offspring into the (sorted) population if it beats the worst
+     * member, replacing a random individual in the weaker half and re-sorting.
+     *
+     * @param newSolution the offspring to consider, ignored if {@code null}
+     */
     private void UpdatePopulation(Tour newSolution) {
         if (newSolution == null)
             return;
@@ -108,6 +141,12 @@ public class GeneticAlgorithm extends MetaHeuristic {
         }
     }
     
+    /**
+     * Fills the population with locally improved random tours, built in
+     * parallel, and sorts it by cost.
+     *
+     * @throws Exception if an initialization task fails
+     */
     private void InitialPopulation() throws Exception {
         for (int i = 0; i < this.PopulationSize; i++) {
             Callable<Tour> task = () -> {
@@ -124,6 +163,7 @@ public class GeneticAlgorithm extends MetaHeuristic {
         Arrays.sort(this.Population);
     }
     
+    /** Waits for all pending offspring tasks of the current generation, then clears them. */
     private void FuturesJoin() {
         for (Future futur : this.Futures)
             try {
@@ -134,6 +174,11 @@ public class GeneticAlgorithm extends MetaHeuristic {
         this.Futures.clear();
     }
     
+    /**
+     * Returns the fittest of {@code TournamentSize} randomly drawn individuals.
+     *
+     * @return the tournament winner
+     */
     private Tour tournamentSelection() {
         Tour bestInTournament = null;
         for (int i = 0; i < this.TournamentSize; i++) {
@@ -145,6 +190,13 @@ public class GeneticAlgorithm extends MetaHeuristic {
         return bestInTournament;
     }
     
+    /**
+     * Stochastic stopping test: always continues while below the minimum
+     * stagnation time, then continues with a probability that decays as
+     * stagnation grows relative to the total elapsed time.
+     *
+     * @return {@code true} to keep searching, {@code false} to stop
+     */
     private boolean nonStopCondition() {
         long current_time = System.currentTimeMillis();
         if (current_time - this.BestSolutionReachingTime < this.StagnationMinTime)
@@ -154,6 +206,11 @@ public class GeneticAlgorithm extends MetaHeuristic {
         return Math.random() > probability;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return the elapsed time between the start and end of {@link #Run()}
+     */
     @Override
     public long getRunningTime() {
         return this.EndTime - this.StartTime;

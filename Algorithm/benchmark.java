@@ -1,40 +1,48 @@
-import Data.InputData;
-import java.io.*;
+package Algorithm;
+
+import Algorithm.Data.InputData;
+import Algorithm.HeuristicApproach.GeneticAlgorithm;
+import Algorithm.HeuristicApproach.MetaHeuristic;
+import Algorithm.HeuristicApproach.Tour;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
-import HeuristicApproach.*;
-
-
-
-
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 
 /**
+ * Batch benchmark: solves every TSPLIB instance in {@code ALL_tsp} up to a
+ * dimension cap, comparing each result against {@code tsplib_best_known.csv} and
+ * writing the costs, times, and gaps to a CSV report.
  *
  * @author Othmane
  */
-public class benchmark_main_class {
+class benchmark_main_class {
 
     /**
-     * @param args the command line arguments
+     * Runs the benchmark over all instances and writes the results CSV.
+     *
+     * @param args ignored
      */
-
     public static void main(String[] args) {
         File dir = new File("ALL_tsp");
-        File[] files = dir.listFiles();
+        File[] files = dir.listFiles((d, n) -> n.endsWith(".tsp"));
         if (files == null) {
             System.err.println("Directory not found or empty: " + dir.getAbsolutePath());
             return;
         }
         long total_run_time = 0l;
         final int max_dimension = 500;
-        // Load best known values from CSV
-        Map<String, String> bestKnownMap = loadBestKnown("tsplib_best_known.csv");
+        // Load best known values from the CSV that sits alongside the instances
+        Map<String, String> bestKnownMap = loadBestKnown(new File(dir, "tsplib_best_known.csv").getPath());
 //        System.out.println(bestKnownMap.toString());
 //        System.exit(0);
 
@@ -100,7 +108,13 @@ public class benchmark_main_class {
         System.out.println("All results stored in \"" + outputFile + "\"");
     }
 
-    // Helper: read tsplib_best_known.csv into a map
+    /**
+     * Reads {@code tsplib_best_known.csv} into a map from instance name to its
+     * best-known cost (as a string).
+     *
+     * @param csvPath the path to the best-known CSV
+     * @return a map of instance name to best-known value
+     */
     private static Map<String, String> loadBestKnown(String csvPath) {
         Map<String, String> map = new HashMap<>();
         try (BufferedReader br = Files.newBufferedReader(Path.of(csvPath))) {
@@ -117,7 +131,12 @@ public class benchmark_main_class {
         return map;
     }
 
-    // Helper: strip extension like .tsp or .txt
+    /**
+     * Strips a trailing file extension (e.g. {@code .tsp}) from a name.
+     *
+     * @param filename the file name
+     * @return the name without its extension
+     */
     private static String stripExtension(String filename) {
         int dot = filename.lastIndexOf('.');
         return dot == -1 ? filename : filename.substring(0, dot);

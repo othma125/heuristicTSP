@@ -1,18 +1,32 @@
-package HeuristicApproach.LSM;
+package Algorithm.HeuristicApproach.LSM;
 
-import Data.InputData;
-import HeuristicApproach.Move;
+import Algorithm.Data.InputData;
+import Algorithm.HeuristicApproach.Move;
 
 /**
+ * The swap local-search move: exchanges the two stops at positions {@code I} and
+ * {@code J}, affecting the four incident edges.
  *
  * @author Othmane
  */
 public class Swap extends LocalSearchMove {
 
+    /**
+     * Creates a swap move over the two given positions.
+     *
+     * @param sequence the tour sequence
+     * @param i the first position
+     * @param j the second position
+     */
     public Swap(int[] sequence, int i, int j) {
         super("Swap", sequence, i, j);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param sequence the tour sequence to modify
+     */
     @Override
     public void Perform(int[] sequence) {
         if (this.I == this.J)
@@ -20,6 +34,11 @@ public class Swap extends LocalSearchMove {
         new Move(this.I, this.J).Swap(sequence);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param data the instance providing distances
+     */
     @Override
     public void setGain(InputData data) {
         if (this.I == this.J || (this.I == 0 && this.J + 1 == this.Sequence.length))
