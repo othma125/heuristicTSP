@@ -1,5 +1,7 @@
 # TSP Memetic Algorithm Solver
 
+![TSP solver web landing page](thumbnail.png)
+
 This project solves symmetric Traveling Salesman Problem (TSP) instances from TSPLIB using a Memetic Algorithm (Genetic Algorithm + Local Search). It can run a single instance or benchmark a directory of instances and compare results to best-known TSPLIB optima.
 
 Reference TSPLIB STSP page: http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/STSP.html
