@@ -62,15 +62,16 @@ public class GeneticAlgorithm extends MetaHeuristic {
         } catch (Exception ex) {
             Logger.getLogger(GeneticAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
         }
-        do {
-            for (int i = 0; i < this.PopulationSize; i++)
-                try {
-                    this.Selection();
-                } catch (InterruptedException | ExecutionException ex) {
-                    Logger.getLogger(GeneticAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            this.FuturesJoin();
-        } while(!this.StopRequested && this.nonStopCondition());
+        if (!this.StopRequested)
+            do {
+                for (int i = 0; i < this.PopulationSize; i++)
+                    try {
+                        this.Selection();
+                    } catch (InterruptedException | ExecutionException ex) {
+                        Logger.getLogger(GeneticAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                this.FuturesJoin();
+            } while(!this.StopRequested && this.nonStopCondition());
         this.Executor.shutdown();
         this.EndTime = System.currentTimeMillis();
     }
@@ -157,15 +158,21 @@ public class GeneticAlgorithm extends MetaHeuristic {
             this.Futures.add(this.Executor.submit(task));
         }
         int i = -1;
-        for (Future<Tour> future: this.Futures)
+        for (Future<Tour> future: this.Futures) {
+            if (this.StopRequested) {
+                future.cancel(true);
+                continue;
+            }
             this.Population[++i] = future.get();
+        }
         this.Futures.clear();
-        Arrays.sort(this.Population);
+        if (!this.StopRequested)
+            Arrays.sort(this.Population);
     }
     
     /** Waits for all pending offspring tasks of the current generation, then clears them. */
     private void FuturesJoin() {
-        for (Future futur : this.Futures)
+        for (Future<Tour> futur : this.Futures)
             try {
                 futur.get();
             } catch (InterruptedException | ExecutionException ex) {
