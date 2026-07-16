@@ -64,6 +64,7 @@ A dependency-free landing page (built on the JDK `HttpServer`) lets you pick a T
 - [`Web.Server`](Web/Server.java): serves [Web/index.html](Web/index.html), [Web/app.js](Web/app.js), [Web/styles.css](Web/styles.css); lists [ALL_tsp](Algorithm/ALL_tsp) instances, streams the solver log over Server-Sent Events, and returns the final tour (with cost, time, and gap vs. [tsplib_best_known.csv](Algorithm/ALL_tsp/tsplib_best_known.csv)).
 - The **Solve** button runs the memetic algorithm; **Stop** ends it early (`GeneticAlgorithm.requestStop()`); **Visualize** draws the closed Hamiltonian cycle over the cities; **Save** exports a TSPLIB `.tour` file.
 - Instances with explicit distance matrices (no `NODE_COORD_SECTION`) still solve, but cannot be plotted.
+- Closing the tab stops the solve: the server pings the browser every 5s and a failed ping calls `requestStop()`, so an abandoned run no longer keeps a core busy and blocks the next solve. Both paths keep the best tour found so far.
 
 Run it (from the project root):
 

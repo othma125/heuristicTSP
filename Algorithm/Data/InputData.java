@@ -29,6 +29,9 @@ public class InputData implements CostMatrix, Comparable<InputData>, AutoCloseab
 
     /** Number of stops (the instance dimension). */
     public int StopsCount = 0;
+    // Carried here because the instance is the one object every local search already
+    // receives, so a stop can be seen deep in the search without new plumbing.
+    private volatile boolean StopRequested = false;
     // Thread-safe distance cache: multiple threads may call getCost concurrently
     private ConcurrentMap<Edge, Double> CostSet = null;          // explicit or lazily cached distances
     // Dense matrix strategy for small instances
@@ -43,7 +46,19 @@ public class InputData implements CostMatrix, Comparable<InputData>, AutoCloseab
     /** The instance file name (with extension). */
     public final String FileName;
     private volatile boolean closed = false; // indicates resources released
-    
+
+    /** Asks any local search running on this instance to abort as soon as it can. */
+    public void requestStop() {
+        this.StopRequested = true;
+    }
+
+    /**
+     * @return {@code true} once {@link #requestStop()} has been called
+     */
+    public boolean isStopRequested() {
+        return this.StopRequested;
+    }
+
     /**
      * Loads a TSPLIB instance with no dimension cap.
      *

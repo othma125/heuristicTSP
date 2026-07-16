@@ -30,7 +30,6 @@ public class GeneticAlgorithm extends MetaHeuristic {
     private final int PopulationSize;
     private final int TournamentSize = 5;
     private long EndTime;
-    private volatile boolean StopRequested = false;
     private final Set<Future<Tour>> Futures;
     
     /**
@@ -62,7 +61,7 @@ public class GeneticAlgorithm extends MetaHeuristic {
         } catch (Exception ex) {
             Logger.getLogger(GeneticAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
         }
-        if (!this.StopRequested)
+        if (!this.Data.isStopRequested())
             do {
                 for (int i = 0; i < this.PopulationSize; i++)
                     try {
@@ -71,14 +70,18 @@ public class GeneticAlgorithm extends MetaHeuristic {
                         Logger.getLogger(GeneticAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 this.FuturesJoin();
-            } while(!this.StopRequested && this.nonStopCondition());
+            } while(!this.Data.isStopRequested() && this.nonStopCondition());
         this.Executor.shutdown();
         this.EndTime = System.currentTimeMillis();
     }
 
-    /** Asks the search loop to stop after the current generation (used by the web UI). */
+    /**
+     * Asks the search to stop early; it keeps the best tour found so far. The flag lives
+     * on the instance so the local search can abort mid-run rather than only between
+     * generations, which on a large instance can be minutes away.
+     */
     public void requestStop() {
-        this.StopRequested = true;
+        this.Data.requestStop();
     }
     
     /**
@@ -159,14 +162,14 @@ public class GeneticAlgorithm extends MetaHeuristic {
         }
         int i = -1;
         for (Future<Tour> future: this.Futures) {
-            if (this.StopRequested) {
+            if (this.Data.isStopRequested()) {
                 future.cancel(true);
                 continue;
             }
             this.Population[++i] = future.get();
         }
         this.Futures.clear();
-        if (!this.StopRequested)
+        if (!this.Data.isStopRequested())
             Arrays.sort(this.Population);
     }
     

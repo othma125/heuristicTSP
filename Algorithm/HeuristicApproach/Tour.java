@@ -262,7 +262,9 @@ public final class Tour implements Comparable<Tour> {
     public void LocalSearch(InputData data, double probability) {
 	int max = (int) Math.sqrt(data.StopsCount);
         int improvementCounter = 0;
-        for (int i = 0; improvementCounter < max && i < this.Sequence.length - 1; i++)
+        // The scan is quadratic in the tour length, so a stopped run checks here rather than
+        // only at the recursion below: on a large instance one pass alone runs for minutes.
+        for (int i = 0; improvementCounter < max && i < this.Sequence.length - 1 && !data.isStopRequested(); i++)
             for (int j = i + 1; improvementCounter < max && j < this.Sequence.length ; j++) {
                 LocalSearchMove lsm = new _2opt(this.Sequence, i , j);
                 double gain = lsm.getGain(data);
@@ -273,7 +275,8 @@ public final class Tour implements Comparable<Tour> {
                 }
             }
         boolean again = Math.random() > probability;
-        if ((again && improvementCounter > 0) || (!again && improvementCounter < max && this.StagnationBreaker(data))) {
+        if (!data.isStopRequested()
+                && ((again && improvementCounter > 0) || (!again && improvementCounter < max && this.StagnationBreaker(data)))) {
             int n = (int) (Math.random() * Math.sqrt(data.StopsCount));
             Move move = new Move(0, this.Sequence.length - 1);
             for (; n > 0; n--)
