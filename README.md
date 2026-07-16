@@ -78,7 +78,9 @@ javac -encoding UTF-8 -d out $(find . -name '*.java' ! -path './out/*')
 java -cp out Web.Server   # then open http://localhost:8080
 ```
 
-The port comes from the CLI argument, then `PORT` in `.env`, then `8080`. Use `./kill-server.sh` to stop it.
+The port comes from the CLI argument, then `PORT` in `.env`, then `8080`. If it is already in
+use, the server walks forward to the next free port (up to 10) and prints the one it bound.
+Use `./kill-server.sh` to stop it.
 
 ## Requirements
 
