@@ -61,7 +61,13 @@ Reference TSPLIB STSP page: http://comopt.ifi.uni-heidelberg.de/software/TSPLIB9
 
 A dependency-free landing page (built on the JDK `HttpServer`) lets you pick a TSPLIB instance, watch the live solver log, and visualize the best tour in the browser.
 
-- [`Web.Server`](Web/Server.java): serves [Web/index.html](Web/index.html), [Web/app.js](Web/app.js), [Web/styles.css](Web/styles.css); lists [ALL_tsp](Algorithm/ALL_tsp) instances, streams the solver log over Server-Sent Events, and returns the final tour (with cost, time, and gap vs. [tsplib_best_known.csv](Algorithm/ALL_tsp/tsplib_best_known.csv)).
+- The `Web.Server` package, one class per concern (the static assets stay in [Web](Web)):
+  - [`Web.Server.Main`](Web/Server/Main.java): entry point — resolves the port and wires the route table; serves [Web/index.html](Web/index.html), [Web/app.js](Web/app.js), [Web/styles.css](Web/styles.css).
+  - [`Web.Server.Instances`](Web/Server/Instances.java): the [ALL_tsp](Algorithm/ALL_tsp) folder — listing, request-to-file resolution, and best-known costs from [tsplib_best_known.csv](Algorithm/ALL_tsp/tsplib_best_known.csv).
+  - [`Web.Server.SolveHandler`](Web/Server/SolveHandler.java): the `/api/solve` and `/api/stop` endpoints; runs one solve at a time and keeps a handle on it so it can be stopped.
+  - [`Web.Server.SolveRun`](Web/Server/SolveRun.java): one solve of one instance — log redirection, keep-alive watchdog, and the final result (cost, time, gap, tour).
+  - [`Web.Server.Sse`](Web/Server/Sse.java): one Server-Sent Events connection; serialises the log lines and the keep-alive pings.
+  - [`Web.Server.Http`](Web/Server/Http.java): query parsing, the file-name trust boundary, and response writing.
 - The **Solve** button runs the memetic algorithm; **Stop** ends it early (`GeneticAlgorithm.requestStop()`); **Visualize** draws the closed Hamiltonian cycle over the cities; **Save** exports a TSPLIB `.tour` file.
 - Instances with explicit distance matrices (no `NODE_COORD_SECTION`) still solve, but cannot be plotted.
 - Closing the tab stops the solve: the server pings the browser every 5s and a failed ping calls `requestStop()`, so an abandoned run no longer keeps a core busy and blocks the next solve. Both paths keep the best tour found so far.
@@ -76,7 +82,7 @@ Or manually:
 
 ```bash
 javac -encoding UTF-8 -d out $(find . -name '*.java' ! -path './out/*')
-java -cp out Web.Server   # then open http://localhost:8080
+java -cp out Web.Server.Main   # then open http://localhost:8080
 ```
 
 The port comes from the CLI argument, then `PORT` in `.env`, then `8080`. If it is already in
