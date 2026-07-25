@@ -4,6 +4,10 @@ const $ = id => document.getElementById(id);
 let tour = null;   // array of node ids (1-based) in visit order
 let coords = null; // {id:[x,y]}
 let vizShown = false; // the map appears only after the first Visualize click
+let edgeType = ""; // instance EDGE_WEIGHT_TYPE, drives the leg distances shown on hover
+// refreshed by drawTour, in CSS px — feed the hover tooltip
+let hoverPts = []; // [{id, x, y}]
+let hoverSegs = []; // [{a, b, d, x1, y1, x2, y2}] for the drawn tour legs only
 
 // theme (dark default, persisted)
 if (localStorage.theme) document.documentElement.dataset.theme = localStorage.theme;
@@ -127,9 +131,10 @@ $("saveImg").onclick = async () => {
 // enabled only once a tour exists; first click reveals the map
 $("viz").onclick = () => { vizShown = true; $("saveBar").style.display = "block"; drawTour(coords, tour); };
 
-// parse TSPLIB NODE_COORD_SECTION -> {id:[x,y]}
+// parse TSPLIB NODE_COORD_SECTION -> {id:[x,y]}, and remember EDGE_WEIGHT_TYPE
 function parseCoords(text) {
   const coords = {}; let inSection = false;
+  edgeType = (text.match(/EDGE_WEIGHT_TYPE\s*:\s*(\S+)/i) || ["", ""])[1].toUpperCase();
   for (const line of text.split("\n")) {
     const t = line.trim();
     if (/^NODE_COORD_SECTION/i.test(t)) { inSection = true; continue; }
@@ -142,6 +147,22 @@ function parseCoords(text) {
   return coords;
 }
 
+// leg cost between two [x,y] pairs, mirroring InputData.computeAndStore so the
+// numbers on the map add up to the tour length the solver reports
+function edgeCost(a, b) {
+  const dx = a[0] - b[0], dy = a[1] - b[1], euc = Math.hypot(dx, dy);
+  if (edgeType === "CEIL_2D") return Math.ceil(euc);
+  if (edgeType.startsWith("EUC")) return Math.round(euc);
+  if (edgeType === "ATT") { const r = Math.sqrt((dx * dx + dy * dy) / 10), t = Math.round(r); return t < r ? t + 1 : t; }
+  if (edgeType === "GEO") { // great circle on a 6378.388 km sphere, DDD.MM coordinates
+    const rad = v => Math.PI * ((v | 0) + 5 * (v - (v | 0)) / 3) / 180;
+    const [la1, lo1, la2, lo2] = [rad(a[0]), rad(a[1]), rad(b[0]), rad(b[1])];
+    const q1 = Math.cos(lo1 - lo2), q2 = Math.cos(la1 - la2), q3 = Math.cos(la1 + la2);
+    return 6378.388 * Math.acos(0.5 * ((1 + q1) * q2 - (1 - q1) * q3)) + 1 | 0;
+  }
+  return Math.round(euc * 100) / 100; // fallback: raw euclidean
+}
+
 // draw the cities, and — when a tour is given — the closed Hamiltonian cycle through them
 function drawTour(coords, tourIds) {
   const cv = $("canvas"); cv.style.display = "block";
@@ -152,6 +173,7 @@ function drawTour(coords, tourIds) {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, cssW, cssH);
 
   const ids = Object.keys(coords || {}).map(Number);
+  hoverPts = []; hoverSegs = [];
   if (!ids.length) { // explicit-weight instance: no coordinates to plot
     ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--muted");
     ctx.font = "14px system-ui"; ctx.fillText("This instance has no coordinates to visualize.", 20, 30);
@@ -164,22 +186,50 @@ function drawTour(coords, tourIds) {
   const tx = x => pad + (x - minX) * s;
   const ty = y => cssH - pad - (y - minY) * s; // flip Y
 
+  hoverPts = ids.map(id => ({ id, x: tx(coords[id][0]), y: ty(coords[id][1]) }));
+
   const css = getComputedStyle(document.documentElement);
   if (tourIds && tourIds.length) {
     ctx.strokeStyle = css.getPropertyValue("--accent"); ctx.lineWidth = 1.4; ctx.beginPath();
-    const first = coords[tourIds[0]];
-    ctx.moveTo(tx(first[0]), ty(first[1]));
-    for (const id of tourIds) { const c = coords[id]; if (c) ctx.lineTo(tx(c[0]), ty(c[1])); }
-    ctx.lineTo(tx(first[0]), ty(first[1])); ctx.stroke(); // close the cycle
+    const seq = tourIds.filter(id => coords[id]); seq.push(seq[0]); // close the cycle
+    ctx.moveTo(tx(coords[seq[0]][0]), ty(coords[seq[0]][1]));
+    for (let i = 1; i < seq.length; i++) {
+      const a = coords[seq[i - 1]], b = coords[seq[i]];
+      ctx.lineTo(tx(b[0]), ty(b[1]));
+      hoverSegs.push({ a: seq[i - 1], b: seq[i], d: edgeCost(a, b),
+                       x1: tx(a[0]), y1: ty(a[1]), x2: tx(b[0]), y2: ty(b[1]) });
+    }
+    ctx.stroke();
   }
   // cities
   ctx.fillStyle = css.getPropertyValue("--muted");
   for (const id of ids) { const c = coords[id]; ctx.beginPath(); ctx.arc(tx(c[0]), ty(c[1]), 2.5, 0, 7); ctx.fill(); }
-  // start city
+  // depot: the tour's first city, where the cycle opens and closes
   if (tourIds && tourIds.length) {
     const c = coords[tourIds[0]];
-    ctx.fillStyle = css.getPropertyValue("--teal"); ctx.beginPath(); ctx.arc(tx(c[0]), ty(c[1]), 5, 0, 7); ctx.fill();
+    ctx.fillStyle = css.getPropertyValue("--danger"); ctx.beginPath(); ctx.arc(tx(c[0]), ty(c[1]), 6, 0, 7); ctx.fill();
   }
 }
+
+// perpendicular distance from (x,y) to segment s, clamped to its endpoints
+function segDist(s, x, y) {
+  const dx = s.x2 - s.x1, dy = s.y2 - s.y1;
+  const t = Math.max(0, Math.min(1, ((x - s.x1) * dx + (y - s.y1) * dy) / (dx * dx + dy * dy || 1)));
+  return Math.hypot(x - s.x1 - t * dx, y - s.y1 - t * dy);
+}
+
+// hover tooltip: city within 8 px wins, else the tour leg within 5 px
+// (the tour's first city is the depot — it's where the cycle opens and closes)
+$("canvas").onmousemove = e => {
+  const tip = $("tip"), r = e.target.getBoundingClientRect();
+  const x = e.clientX - r.left, y = e.clientY - r.top;
+  const p = hoverPts.find(p => Math.hypot(p.x - x, p.y - y) < 8);
+  const s = !p && hoverSegs.find(s => segDist(s, x, y) < 5);
+  if (!p && !s) { tip.style.display = "none"; return; }
+  tip.textContent = p ? (tour && p.id === tour[0] ? "Depot" : "City " + p.id) : `City ${s.a} → ${s.b} — ${s.d}`;
+  tip.style.left = (e.pageX + 12) + "px"; tip.style.top = (e.pageY + 12) + "px";
+  tip.style.display = "block";
+};
+$("canvas").onmouseleave = () => $("tip").style.display = "none";
 
 loadInstances();
