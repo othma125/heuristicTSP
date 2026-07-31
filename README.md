@@ -81,8 +81,8 @@ Run it (from the project root):
 Or manually:
 
 ```bash
-javac -encoding UTF-8 -d out $(find . -name '*.java' ! -path './out/*')
-java -cp out Web.Server.Main   # then open http://localhost:8080
+./compile.sh                   # or: javac -encoding UTF-8 -d out $(find . -name '*.java' ! -path './out/*')
+java -cp out Web.Server.Main   # then open http://localhost:8082
 ```
 
 The port comes from the CLI argument, then `PORT` in `.env`, then `8080`. If it is already in
