@@ -73,7 +73,8 @@ button.primary { background:var(--accent); color:var(--accent-ink); border-color
 button.primary:hover:not(:disabled) { filter:brightness(1.08); }
 button:disabled { opacity:.45; cursor:not-allowed; }
 .row { display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end; }
-.row > div { flex:1; min-width:180px; }
+.row > div { flex:0 1 auto; min-width:180px; }
+.row > div:last-child { margin-left:auto; justify-content:flex-end; }
 
 /* stats — instrument readouts */
 #stats { margin-top:20px; display:flex; gap:14px; flex-wrap:wrap; }
