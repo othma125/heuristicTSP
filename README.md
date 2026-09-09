@@ -64,13 +64,13 @@ A dependency-free landing page (built on the JDK `HttpServer`) lets you pick a T
 - The `Web.Server` package, one class per concern (the static assets stay in [Web](Web)):
   - [`Web.Server.Main`](Web/Server/Main.java): entry point — resolves the port and wires the route table; serves [Web/index.html](Web/index.html), [Web/app.js](Web/app.js), [Web/styles.css](Web/styles.css).
   - [`Web.Server.Instances`](Web/Server/Instances.java): the [ALL_tsp](Algorithm/ALL_tsp) folder — listing, request-to-file resolution, and best-known costs from [tsplib_best_known.csv](Algorithm/ALL_tsp/tsplib_best_known.csv).
-  - [`Web.Server.SolveHandler`](Web/Server/SolveHandler.java): the `/api/solve` and `/api/stop` endpoints; runs one solve at a time and keeps a handle on it so it can be stopped.
-  - [`Web.Server.SolveRun`](Web/Server/SolveRun.java): one solve of one instance — log redirection, keep-alive watchdog, and the final result (cost, time, gap, tour).
+  - [`Web.Server.SolveHandler`](Web/Server/SolveHandler.java): the `/api/solve` and `/api/stop` endpoints; keys runs in progress by a per-tab `run` id, so several tabs can solve at once and each one stops only its own.
+  - [`Web.Server.SolveRun`](Web/Server/SolveRun.java): one solve of one instance — its own log stream, keep-alive watchdog, and the final result (cost, time, gap, tour).
   - [`Web.Server.Sse`](Web/Server/Sse.java): one Server-Sent Events connection; serialises the log lines and the keep-alive pings.
   - [`Web.Server.Http`](Web/Server/Http.java): query parsing, the file-name trust boundary, and response writing.
 - The **Solve** button runs the memetic algorithm; **Stop** ends it early (`GeneticAlgorithm.requestStop()`); **Visualize** draws the closed Hamiltonian cycle over the cities; **Save** exports a TSPLIB `.tour` file.
 - Instances with explicit distance matrices (no `NODE_COORD_SECTION`) still solve, but cannot be plotted.
-- Closing the tab stops the solve: the server pings the browser every 5s and a failed ping calls `requestStop()`, so an abandoned run no longer keeps a core busy and blocks the next solve. Both paths keep the best tour found so far.
+- Closing the tab stops the solve: the server pings the browser every 5s and a failed ping calls `requestStop()`, so an abandoned run no longer keeps a core busy. Both paths keep the best tour found so far, and neither one touches another tab's solve.
 
 Run it (from the project root):
 

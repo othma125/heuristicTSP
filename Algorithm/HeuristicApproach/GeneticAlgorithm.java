@@ -51,10 +51,10 @@ public class GeneticAlgorithm extends MetaHeuristic {
      */
     @Override
     public void Run() {
-        System.out.println("File to solve = " + this.Data.FileName);
-        System.out.println("Stops Count = " + this.Data.StopsCount);
-        System.out.println("Solution approach = Memetic Algorithm");
-        System.out.println();
+        this.Log.println("File to solve = " + this.Data.FileName);
+        this.Log.println("Stops Count = " + this.Data.StopsCount);
+        this.Log.println("Solution approach = Memetic Algorithm");
+        this.Log.println();
         this.StartTime = System.currentTimeMillis();
         try {
             this.InitialPopulation();

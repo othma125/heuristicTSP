@@ -7,20 +7,20 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * The {@code /api/solve} and {@code /api/stop} endpoints. Serialises runs — the
- * solver logs to the process-wide {@code System.out}, so exactly one
- * {@link SolveRun} may own it — and keeps a handle on the active run so a stop
- * request can reach it.
+ * The {@code /api/solve} and {@code /api/stop} endpoints. Runs are keyed by the
+ * {@code run} id the browser sends with both requests, so several tabs can solve
+ * at once and each stop request reaches its own {@link SolveRun}.
  *
  * @author Othmane EL YAAKOUBI
  */
 final class SolveHandler {
 
-    private static final Object LOCK = new Object();
-    // ponytail: one solve at a time. Per-session isolation only if concurrency matters.
-    private static volatile SolveRun current;
+    /** Runs in progress by client-supplied id, so {@link #stop} hits the right one. */
+    private static final Map<String, SolveRun> RUNNING = new ConcurrentHashMap<>();
 
     /** Static utility class; not instantiable. */
     private SolveHandler() {
@@ -41,25 +41,25 @@ final class SolveHandler {
             sse.close();
             return;
         }
-        synchronized (LOCK) {
-            SolveRun run = new SolveRun(instance, sse);
-            current = run;
-            try {
-                run.run();
-            } finally {
-                current = null;
-            }
+        String id = Http.query(ex).getOrDefault("run", "");
+        SolveRun run = new SolveRun(instance, sse);
+        RUNNING.put(id, run);
+        try {
+            run.run();
+        } finally {
+            RUNNING.remove(id);
         }
     }
 
     /**
-     * Asks the running solve to stop early.
+     * Asks the solve identified by the {@code run} query parameter to stop early.
+     * Unknown ids are ignored: the run has already finished.
      *
      * @param ex the HTTP exchange
      * @throws IOException when writing the response fails
      */
     static void stop(HttpExchange ex) throws IOException {
-        SolveRun run = current;
+        SolveRun run = RUNNING.get(Http.query(ex).getOrDefault("run", ""));
         if (run != null)
             run.requestStop();
         Http.send(ex, 200, "text/plain", "stopping".getBytes(StandardCharsets.UTF_8));

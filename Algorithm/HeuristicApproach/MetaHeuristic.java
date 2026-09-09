@@ -1,6 +1,7 @@
 package Algorithm.HeuristicApproach;
 
 import Algorithm.Data.InputData;
+import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,6 +28,12 @@ public abstract class MetaHeuristic {
     final ReentrantLock Lock = new ReentrantLock();
     final long StagnationMinTime;
     final ExecutorService Executor;
+    /**
+     * Where the search reports progress. Defaults to the process standard output;
+     * the web server points it at the requesting client's event stream so that
+     * concurrent runs never share one log.
+     */
+    public PrintStream Log = System.out;
 
     /**
      * Initializes shared state for the given instance: the stagnation budget and
@@ -62,7 +69,7 @@ public abstract class MetaHeuristic {
             if (this.BestSolution == null || solution.compareTo(this.BestSolution) < 0) {
                 this.BestSolutionReachingTime = System.currentTimeMillis();
                 this.BestSolution = solution;
-                System.out.println(solution.getCost() + " after " + (this.BestSolutionReachingTime  - this.StartTime) + " ms");
+                this.Log.println(solution.getCost() + " after " + (this.BestSolutionReachingTime  - this.StartTime) + " ms");
             }
         } finally {
             this.Lock.unlock();

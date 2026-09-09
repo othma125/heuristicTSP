@@ -196,12 +196,15 @@ public final class Tour implements Comparable<Tour> {
      * Escapes a local optimum by scanning swap and bounded left/right shift
      * moves and applying the single best improving move found.
      *
+     * <p>Gives up as soon as a stop is requested, reporting no move: the scan is
+     * quadratic in the tour length, so on a large instance it runs for minutes.
+     *
      * @param data the instance providing distances
      * @return {@code true} if an improving move was applied, {@code false} otherwise
      */
     public boolean StagnationBreaker(InputData data) {
 	int max = (int) Math.sqrt(data.StopsCount);
-        for (int i = 0; i < this.Sequence.length - 1; i++) {
+        for (int i = 0; i < this.Sequence.length - 1 && !data.isStopRequested(); i++) {
             LocalSearchMove best_lsm = null;
             for (int j = i + 1; j < this.Sequence.length; j++) {   
                 if (j > i + 1) {

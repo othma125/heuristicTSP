@@ -8,7 +8,6 @@ import Algorithm.HeuristicApproach.Tour;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.concurrent.Executors;
@@ -18,7 +17,7 @@ import java.util.stream.IntStream;
 
 /**
  * A single solve of one instance, streamed to one browser: it owns the log
- * redirection, the keep-alive watchdog, the solver itself, and the final
+ * stream, the keep-alive watchdog, the solver itself, and the final
  * {@code result} event. Created per request, so nothing about a run leaks into
  * static state except the handle {@link SolveHandler} keeps to stop it.
  *
@@ -48,31 +47,30 @@ final class SolveRun {
      * Runs the memetic algorithm to completion (or until stopped) and closes the
      * connection.
      *
-     * <p>The solver reports progress on {@code System.out}, which is process-wide:
-     * this is why only one run may be active at a time (see {@link SolveHandler}).
+     * <p>The solver reports progress on its own {@link GeneticAlgorithm#Log}
+     * stream rather than the process-wide {@code System.out}, so concurrent runs
+     * never write into each other's page.
      *
      * @throws IOException when writing to the connection fails
      */
     void run() throws IOException {
-        PrintStream original = System.out;
-        System.setOut(sse.logStream(this::requestStop));
         // The solver only prints on improvement, so it can run silent for minutes and never
         // notice a closed tab. Ping instead: a failed write means nobody is listening.
         ScheduledExecutorService watchdog = Executors.newSingleThreadScheduledExecutor();
         watchdog.scheduleWithFixedDelay(this::ping, 5, 5, TimeUnit.SECONDS);
         try (InputData data = new InputData(instance)) {
-            algorithm = new GeneticAlgorithm(data);
-            algorithm.Run();
+            GeneticAlgorithm algo = new GeneticAlgorithm(data);
+            algo.Log = sse.logStream(this::requestStop);
+            algorithm = algo;
+            algo.Run();
 
             Tour best = algorithm.getBestSolution();
             sse.event("sol", tourText(best));
             sse.event("result", resultJson(best, algorithm.getRunningTime()));
         } catch (Exception e) {
-            System.setOut(original);
             sse.event("log", "ERROR: " + e.getMessage());
             sse.event("result", FAILED);
         } finally {
-            System.setOut(original);
             watchdog.shutdownNow();
             sse.close();
         }

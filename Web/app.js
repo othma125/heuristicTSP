@@ -39,7 +39,7 @@ async function showInstance() {
   if (vizShown) drawTour(coords, null);
 }
 
-let running = false;
+let running = false, runId = "";
 function setRunning(on) {
   running = on;
   $("solve").textContent = on ? "Stop" : "Solve";
@@ -48,7 +48,7 @@ function setRunning(on) {
 }
 
 $("solve").onclick = () => {
-  if (running) { $("solve").disabled = true; fetch("/api/stop"); return; } // let the final result arrive over SSE
+  if (running) { $("solve").disabled = true; fetch(`/api/stop?run=${runId}`); return; } // let the final result arrive over SSE
   const file = $("instance").value;
   const log = $("log"); log.textContent = ""; $("stats").textContent = "";
   $("solText").textContent = "";
@@ -56,7 +56,8 @@ $("solve").onclick = () => {
   tour = null;
   if (vizShown) drawTour(coords, null); // keep the scatter visible while solving
   setRunning(true);
-  const es = new EventSource(`/api/solve?file=${encodeURIComponent(file)}`);
+  runId = Math.random().toString(36).slice(2); // per-tab, so Stop hits this run and no other
+  const es = new EventSource(`/api/solve?file=${encodeURIComponent(file)}&run=${runId}`);
   es.addEventListener("log", e => { log.textContent += e.data + "\n"; log.scrollTop = log.scrollHeight; });
   es.addEventListener("result", e => {
     es.close(); setRunning(false); $("solve").disabled = false;
