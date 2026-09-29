@@ -7,10 +7,9 @@ import Algorithm.HeuristicApproach.LSM.RightShift;
 import Algorithm.HeuristicApproach.LSM.Swap;
 import Algorithm.HeuristicApproach.LSM._2opt;
 import java.util.stream.IntStream;
-import java.util.HashSet;
+import java.util.BitSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.Arrays;
 
 /**
@@ -158,35 +157,35 @@ public final class Tour implements Comparable<Tour> {
         int n = cut_points.length == 1 ? 0 : cut_points[0];
         int p = cut_points[cut_points.length == 1 ? 0 : 1];
         LinkedList<Integer> crossover_child = new LinkedList<>();
-        Set<Integer> non_duplication_set = new HashSet<>(this.Sequence.length, 1f);
+        BitSet non_duplication_set = new BitSet(this.Sequence.length);
         for (int j = n; j < p; j++) {
             int stop = parent.Sequence[j];
             crossover_child.add(stop);
-            non_duplication_set.add(stop);
+            non_duplication_set.set(stop);
         }
 //        int i = 0;
-//        for (int j = p; non_duplication_set.size() < this.Sequence.length; j++) {
+//        for (int j = p; non_duplication_set.cardinality() < this.Sequence.length; j++) {
 //            int stop = this.Sequence[j % this.Sequence.length];
-//            if (non_duplication_set.contains(stop))
+//            if (non_duplication_set.get(stop))
 //                continue;
 //            if (crossover_child.size() < this.Sequence.length - n) {
 //                crossover_child.add(stop);
-//                non_duplication_set.add(stop);
+//                non_duplication_set.set(stop);
 //            }
 //            else {
 //                crossover_child.add(i++, stop);
-//                non_duplication_set.add(stop);
+//                non_duplication_set.set(stop);
 //            }
 //        }
         int k = 0;
         while (this.Sequence[k] != parent.Sequence[p])
             k++;
-        for (int j = k; non_duplication_set.size() < this.Sequence.length; j++) {
+        for (int j = k; non_duplication_set.cardinality() < this.Sequence.length; j++) {
             int stop = this.Sequence[j % this.Sequence.length];
-            if (non_duplication_set.contains(stop))
+            if (non_duplication_set.get(stop))
                 continue;
             crossover_child.add(stop);
-            non_duplication_set.add(stop);
+            non_duplication_set.set(stop);
         }
         Tour.mutation(crossover_child, mutation);
         return new Tour(data, crossover_child);
